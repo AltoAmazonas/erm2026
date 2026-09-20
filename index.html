@@ -2,61 +2,103 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Mi Buscador de Datos</title>
+  <title>Verificación de Identidad</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
-<body style="font-family: Arial, sans-serif; max-width: 600px; margin: 20px auto; padding: 20px;">
+<body style="font-family: Arial, sans-serif; background-color: #e9ecef; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; padding: 20px; box-sizing: border-box;">
 
-  <h2>Buscador de mi Base de Datos</h2>
-  
-  <div style="display: flex; gap: 10px; margin-bottom: 20px;">
-    <input type="text" id="busqueda" placeholder="Escribe aquí lo que buscas..." style="flex: 1; padding: 10px; font-size: 16px; border: 1px solid #ccc; border-radius: 5px;">
-    <button onclick="buscar()" style="padding: 10px 20px; font-size: 16px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer;">Buscar</button>
+  <!-- Cuadro de Diálogo Central -->
+  <div style="background: white; padding: 30px; border-radius: 12px; box-shadow: 0 8px 20px rgba(0,0,0,0.1); max-width: 400px; width: 100%;">
+    
+    <h2 style="text-align: center; color: #333; margin-top: 0;">Consulta de DNI</h2>
+    <p style="text-align: center; color: #666; font-size: 14px; margin-bottom: 25px;">Ingrese el número de DNI para verificar en el sistema.</p>
+    
+    <div style="display: flex; flex-direction: column; gap: 15px; margin-bottom: 20px;">
+      <input type="number" id="dni" placeholder="Ej: 12345678" style="padding: 12px; font-size: 16px; border: 2px solid #ddd; border-radius: 8px; text-align: center; outline: none;">
+      <button onclick="consultar()" style="padding: 14px; font-size: 16px; background: #0056b3; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; transition: background 0.3s;">Verificar DNI</button>
+    </div>
+    
+    <div id="resultados"></div>
+    
   </div>
-  
-  <div id="resultados"></div>
 
   <script>
-    function buscar() {
-      const termino = document.getElementById("busqueda").value.toLowerCase();
+    // Función inteligente para buscar las columnas sin importar mayúsculas/minúsculas
+    function obtenerDato(fila, nombreColumnaBuscada) {
+      const llave = Object.keys(fila).find(k => k.toLowerCase().trim() === nombreColumnaBuscada.toLowerCase().trim());
+      return llave && fila[llave] !== "" ? fila[llave] : "No registrado";
+    }
+
+    function consultar() {
+      const dniIngresado = document.getElementById("dni").value.trim();
       const resultadosDiv = document.getElementById("resultados");
       
-      if(termino.trim() === "") {
-        resultadosDiv.innerHTML = "<p>Por favor, escribe algo para buscar.</p>";
+      if(dniIngresado === "") {
+        resultadosDiv.innerHTML = "<p style='color:#dc3545; text-align:center; font-weight:bold;'>Por favor, ingrese un número de DNI.</p>";
         return;
       }
 
-      resultadosDiv.innerHTML = "<p>Buscando...</p>";
+      resultadosDiv.innerHTML = "<p style='text-align:center; color: #6c757d; font-weight:bold;'>Verificando en la base de datos...</p>";
 
       // ==============================================================
       // REEMPLAZA LA URL DE ABAJO CON TU ENLACE DE SHEETDB
       // ==============================================================
-      const miUrlSheetDB = "https://sheetdb.io/api/v1/entbyg0kw2hdw";
+      const miUrlSheetDB = "https://sheetdb.io/api/v1/TU_CODIGO_AQUI";
 
       fetch(miUrlSheetDB)
         .then(respuesta => respuesta.json())
         .then(datos => {
           resultadosDiv.innerHTML = "";
-          let resultadosEncontrados = 0;
+          let personaEncontrada = null;
 
-          datos.forEach(fila => {
-            const textoDeFila = JSON.stringify(fila).toLowerCase();
-            if (textoDeFila.includes(termino)) {
-              resultadosEncontrados++;
-              let cuadro = "<div style='background: #f9f9f9; border: 1px solid #ddd; padding: 15px; margin-bottom: 10px; border-radius: 8px;'>";
-              for (let columna in fila) {
-                cuadro += `<p style='margin: 5px 0;'><b>${columna}:</b> ${fila[columna]}</p>`;
-              }
-              cuadro += "</div>";
-              resultadosDiv.innerHTML += cuadro;
+          // Buscar el DNI en la base de datos
+          for (let i = 0; i < datos.length; i++) {
+            let dniFila = obtenerDato(datos[i], "DNI"); // Busca la columna DNI en tu Excel
+            if (dniFila === dniIngresado) {
+              personaEncontrada = datos[i];
+              break;
             }
-          });
+          }
 
-          if (resultadosEncontrados === 0) {
-            resultadosDiv.innerHTML = "<p>No se encontraron resultados.</p>";
+          if (personaEncontrada) {
+            // Extraer los datos específicos que pediste
+            const nombre = obtenerDato(personaEncontrada, "nombre completo");
+            const celular = obtenerDato(personaEncontrada, "celular");
+            const departamento = obtenerDato(personaEncontrada, "departamento");
+            const provincia = obtenerDato(personaEncontrada, "provincial"); // Busca la columna "provincial" o "provincia"
+            if(provincia === "No registrado"){ var prov = obtenerDato(personaEncontrada, "provincia"); } else { var prov = provincia; }
+            const distrito = obtenerDato(personaEncontrada, "distrito");
+            const centroPoblado = obtenerDato(personaEncontrada, "centro poblado");
+            const direccion = obtenerDato(personaEncontrada, "direccion");
+            const tipoFlv = obtenerDato(personaEncontrada, "tipo flv");
+
+            // Mostrar el resultado como un cuadro bonito
+            resultadosDiv.innerHTML = `
+              <div style='background: #f0fdf4; border: 1px solid #bbf7d0; padding: 20px; border-radius: 8px; font-size: 14px;'>
+                <h3 style='margin-top:0; color: #166534; text-align: center; border-bottom: 1px solid #bbf7d0; padding-bottom: 10px;'>✅ Identidad Verificada</h3>
+                <div style='line-height: 1.8;'>
+                  <p style='margin: 0;'><b>Nombre:</b> ${nombre}</p>
+                  <p style='margin: 0;'><b>Celular:</b> ${celular}</p>
+                  <p style='margin: 0;'><b>Departamento:</b> ${departamento}</p>
+                  <p style='margin: 0;'><b>Provincia:</b> ${prov}</p>
+                  <p style='margin: 0;'><b>Distrito:</b> ${distrito}</p>
+                  <p style='margin: 0;'><b>C. Poblado:</b> ${centroPoblado}</p>
+                  <p style='margin: 0;'><b>Dirección:</b> ${direccion}</p>
+                  <p style='margin: 0;'><b>Tipo FLV:</b> <span style='background: #dbeafe; color: #1e40af; padding: 3px 8px; border-radius: 4px; font-weight: bold;'>${tipoFlv}</span></p>
+                </div>
+              </div>
+            `;
+          } else {
+            resultadosDiv.innerHTML = `
+              <div style='background: #fef2f2; border: 1px solid #fecaca; padding: 15px; border-radius: 8px; text-align: center;'>
+                <h4 style='margin-top:0; color: #991b1b;'>❌ DNI no encontrado</h4>
+                <p style='color: #7f1d1d; font-size: 14px; margin-bottom: 0;'>El número ingresado no existe en la base de datos.</p>
+              </div>
+            `;
           }
         })
         .catch(error => {
-          resultadosDiv.innerHTML = "<p style='color:red;'>Error de conexión.</p>";
+          resultadosDiv.innerHTML = "<p style='color:#dc3545; text-align:center;'>Error de conexión. Revisa el enlace de SheetDB.</p>";
         });
     }
   </script>
