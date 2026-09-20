@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Mi Buscador de Datos</title>
+</head>
+<body style="font-family: Arial, sans-serif; max-width: 600px; margin: 20px auto; padding: 20px;">
+
+  <h2>Buscador de mi Base de Datos</h2>
+  
+  <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+    <input type="text" id="busqueda" placeholder="Escribe aquí lo que buscas..." style="flex: 1; padding: 10px; font-size: 16px; border: 1px solid #ccc; border-radius: 5px;">
+    <button onclick="buscar()" style="padding: 10px 20px; font-size: 16px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer;">Buscar</button>
+  </div>
+  
+  <div id="resultados"></div>
+
+  <script>
+    function buscar() {
+      const termino = document.getElementById("busqueda").value.toLowerCase();
+      const resultadosDiv = document.getElementById("resultados");
+      
+      if(termino.trim() === "") {
+        resultadosDiv.innerHTML = "<p>Por favor, escribe algo para buscar.</p>";
+        return;
+      }
+
+      resultadosDiv.innerHTML = "<p>Buscando...</p>";
+
+      // ==============================================================
+      // REEMPLAZA LA URL DE ABAJO CON TU ENLACE DE SHEETDB
+      // ==============================================================
+      const miUrlSheetDB = "https://sheetdb.io/api/v1/entbyg0kw2hdw";
+
+      fetch(miUrlSheetDB)
+        .then(respuesta => respuesta.json())
+        .then(datos => {
+          resultadosDiv.innerHTML = "";
+          let resultadosEncontrados = 0;
+
+          datos.forEach(fila => {
+            const textoDeFila = JSON.stringify(fila).toLowerCase();
+            if (textoDeFila.includes(termino)) {
+              resultadosEncontrados++;
+              let cuadro = "<div style='background: #f9f9f9; border: 1px solid #ddd; padding: 15px; margin-bottom: 10px; border-radius: 8px;'>";
+              for (let columna in fila) {
+                cuadro += `<p style='margin: 5px 0;'><b>${columna}:</b> ${fila[columna]}</p>`;
+              }
+              cuadro += "</div>";
+              resultadosDiv.innerHTML += cuadro;
+            }
+          });
+
+          if (resultadosEncontrados === 0) {
+            resultadosDiv.innerHTML = "<p>No se encontraron resultados.</p>";
+          }
+        })
+        .catch(error => {
+          resultadosDiv.innerHTML = "<p style='color:red;'>Error de conexión.</p>";
+        });
+    }
+  </script>
+</body>
+</html>
