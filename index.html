@@ -7,7 +7,6 @@
 </head>
 <body style="font-family: Arial, sans-serif; background-color: #e9ecef; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; padding: 20px; box-sizing: border-box;">
 
-  <!-- Cuadro de Diálogo Central -->
   <div style="background: white; padding: 30px; border-radius: 12px; box-shadow: 0 8px 20px rgba(0,0,0,0.1); max-width: 400px; width: 100%;">
     
     <h2 style="text-align: center; color: #333; margin-top: 0;">Consulta de DNI</h2>
@@ -15,7 +14,7 @@
     
     <div style="display: flex; flex-direction: column; gap: 15px; margin-bottom: 20px;">
       <input type="number" id="dni" placeholder="Ej: 12345678" style="padding: 12px; font-size: 16px; border: 2px solid #ddd; border-radius: 8px; text-align: center; outline: none;">
-      <button onclick="consultar()" style="padding: 14px; font-size: 16px; background: #0056b3; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; transition: background 0.3s;">Verificar DNI</button>
+      <button onclick="consultar()" style="padding: 14px; font-size: 16px; background: #0056b3; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;">Verificar DNI</button>
     </div>
     
     <div id="resultados"></div>
@@ -23,10 +22,15 @@
   </div>
 
   <script>
-    // Función inteligente para buscar las columnas sin importar mayúsculas/minúsculas
+    // Función avanzada que quita tildes, mayúsculas y espacios extra para que no haya errores
+    function normalizar(texto) {
+      return texto.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+    }
+
+    // Busca la columna ignorando tildes y mayúsculas
     function obtenerDato(fila, nombreColumnaBuscada) {
-      const llave = Object.keys(fila).find(k => k.toLowerCase().trim() === nombreColumnaBuscada.toLowerCase().trim());
-      return llave && fila[llave] !== "" ? fila[llave] : "No registrado";
+      const llave = Object.keys(fila).find(k => normalizar(k) === normalizar(nombreColumnaBuscada));
+      return llave && fila[llave] !== null && fila[llave] !== "" ? fila[llave] : "No registrado";
     }
 
     function consultar() {
@@ -38,10 +42,10 @@
         return;
       }
 
-      resultadosDiv.innerHTML = "<p style='text-align:center; color: #6c757d; font-weight:bold;'>Verificando en la base de datos...</p>";
+      resultadosDiv.innerHTML = "<p style='text-align:center; color: #6c757d; font-weight:bold;'>Buscando en la base de datos...</p>";
 
       // ==============================================================
-      // REEMPLAZA LA URL DE ABAJO CON TU ENLACE DE SHEETDB
+      // PON TU ENLACE DE SHEETDB AQUÍ
       // ==============================================================
       const miUrlSheetDB = "https://sheetdb.io/api/v1/TU_CODIGO_AQUI";
 
@@ -51,28 +55,31 @@
           resultadosDiv.innerHTML = "";
           let personaEncontrada = null;
 
-          // Buscar el DNI en la base de datos
+          // Revisamos fila por fila en la primera hoja de tu Excel
           for (let i = 0; i < datos.length; i++) {
-            let dniFila = obtenerDato(datos[i], "DNI"); // Busca la columna DNI en tu Excel
-            if (dniFila === dniIngresado) {
+            let dniFila = obtenerDato(datos[i], "DNI"); 
+            
+            // AQUÍ ESTÁ LA MAGIA: Convertimos ambos DNI a texto obligatoriamente
+            if (String(dniFila).trim() === String(dniIngresado).trim()) {
               personaEncontrada = datos[i];
-              break;
+              break; // Si lo encuentra, se detiene para ahorrar tiempo
             }
           }
 
           if (personaEncontrada) {
-            // Extraer los datos específicos que pediste
             const nombre = obtenerDato(personaEncontrada, "nombre completo");
             const celular = obtenerDato(personaEncontrada, "celular");
             const departamento = obtenerDato(personaEncontrada, "departamento");
-            const provincia = obtenerDato(personaEncontrada, "provincial"); // Busca la columna "provincial" o "provincia"
-            if(provincia === "No registrado"){ var prov = obtenerDato(personaEncontrada, "provincia"); } else { var prov = provincia; }
+            
+            // Intenta buscar "provincial", si no lo halla, busca "provincia"
+            let provincia = obtenerDato(personaEncontrada, "provincial");
+            if (provincia === "No registrado") provincia = obtenerDato(personaEncontrada, "provincia");
+            
             const distrito = obtenerDato(personaEncontrada, "distrito");
             const centroPoblado = obtenerDato(personaEncontrada, "centro poblado");
             const direccion = obtenerDato(personaEncontrada, "direccion");
             const tipoFlv = obtenerDato(personaEncontrada, "tipo flv");
 
-            // Mostrar el resultado como un cuadro bonito
             resultadosDiv.innerHTML = `
               <div style='background: #f0fdf4; border: 1px solid #bbf7d0; padding: 20px; border-radius: 8px; font-size: 14px;'>
                 <h3 style='margin-top:0; color: #166534; text-align: center; border-bottom: 1px solid #bbf7d0; padding-bottom: 10px;'>✅ Identidad Verificada</h3>
@@ -80,7 +87,7 @@
                   <p style='margin: 0;'><b>Nombre:</b> ${nombre}</p>
                   <p style='margin: 0;'><b>Celular:</b> ${celular}</p>
                   <p style='margin: 0;'><b>Departamento:</b> ${departamento}</p>
-                  <p style='margin: 0;'><b>Provincia:</b> ${prov}</p>
+                  <p style='margin: 0;'><b>Provincia:</b> ${provincia}</p>
                   <p style='margin: 0;'><b>Distrito:</b> ${distrito}</p>
                   <p style='margin: 0;'><b>C. Poblado:</b> ${centroPoblado}</p>
                   <p style='margin: 0;'><b>Dirección:</b> ${direccion}</p>
@@ -92,7 +99,7 @@
             resultadosDiv.innerHTML = `
               <div style='background: #fef2f2; border: 1px solid #fecaca; padding: 15px; border-radius: 8px; text-align: center;'>
                 <h4 style='margin-top:0; color: #991b1b;'>❌ DNI no encontrado</h4>
-                <p style='color: #7f1d1d; font-size: 14px; margin-bottom: 0;'>El número ingresado no existe en la base de datos.</p>
+                <p style='color: #7f1d1d; font-size: 14px; margin-bottom: 0;'>El número ${dniIngresado} no existe en la base de datos.</p>
               </div>
             `;
           }
