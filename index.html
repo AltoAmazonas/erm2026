@@ -4,74 +4,38 @@
   <meta charset="UTF-8">
   <title>Consulta FLV - Rutas y Despliegue</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- LIBRERÍA GRATUITA PARA LEER GOOGLE SHEETS DIRECTAMENTE -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
   <style>
     input[type=number]::-webkit-inner-spin-button, 
     input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
     input[type=number] { -moz-appearance: textfield; }
 
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background-color: #f4f6f9;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-      margin: 0;
-      padding: 20px;
-      box-sizing: border-box;
-    }
-    .tarjeta {
-      background: white;
-      padding: 30px;
-      border-radius: 12px;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.15);
-      max-width: 450px;
-      width: 100%;
-      border-top: 6px solid #b71c1c;
-    }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f6f9; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 20px; box-sizing: border-box; }
+    .tarjeta { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.15); max-width: 450px; width: 100%; border-top: 6px solid #b71c1c; }
     .titulo { text-align: center; color: #2c3e50; margin-top: 0; font-weight: 700; letter-spacing: 0.5px; }
     .subtitulo { text-align: center; color: #666; font-size: 14px; margin-bottom: 25px; }
-    .input-dni {
-      padding: 14px; font-size: 18px; border: 2px solid #cbd5e1; border-radius: 6px;
-      text-align: center; outline: none; font-weight: bold; letter-spacing: 2px;
-      color: #333; transition: border-color 0.3s;
-    }
+    .input-dni { padding: 14px; font-size: 18px; border: 2px solid #cbd5e1; border-radius: 6px; text-align: center; outline: none; font-weight: bold; letter-spacing: 2px; color: #333; transition: border-color 0.3s; }
     .input-dni:focus { border-color: #b71c1c; }
-    .btn-consultar {
-      padding: 15px; font-size: 16px; background: #b71c1c; color: white; border: none;
-      border-radius: 6px; cursor: pointer; font-weight: bold; text-transform: uppercase;
-      letter-spacing: 1px; transition: background 0.3s;
-    }
+    .btn-consultar { padding: 15px; font-size: 16px; background: #b71c1c; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; transition: background 0.3s; }
     .btn-consultar:hover { background: #901616; }
-    .btn-volver {
-      margin-top: 20px; padding: 12px; width: 100%; font-size: 14px; background: white;
-      color: #b71c1c; border: 2px solid #b71c1c; border-radius: 6px; cursor: pointer;
-      font-weight: bold; transition: all 0.3s; display: block; text-transform: uppercase;
-    }
+    .btn-volver { margin-top: 20px; padding: 12px; width: 100%; font-size: 14px; background: white; color: #b71c1c; border: 2px solid #b71c1c; border-radius: 6px; cursor: pointer; font-weight: bold; transition: all 0.3s; display: block; text-transform: uppercase; }
     .btn-volver:hover { background: #fef2f2; }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(15px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
   </style>
 </head>
 <body>
 
   <div class="tarjeta">
-    
     <div id="pantalla-busqueda">
       <h2 class="titulo">Consulta FLV</h2>
       <p class="subtitulo">Ingrese el número de DNI</p>
-      
       <div style="display: flex; flex-direction: column; gap: 15px; margin-bottom: 20px;">
         <input type="number" id="dni" class="input-dni" placeholder="Ej: 12345678" oninput="if(this.value.length > 8) this.value = this.value.slice(0, 8);">
         <button onclick="consultar()" class="btn-consultar">Consultar</button>
       </div>
     </div>
-    
     <div id="resultados"></div>
-    
   </div>
 
   <script>
@@ -85,22 +49,16 @@
       return llave && fila[llave] !== null && fila[llave] !== "" ? fila[llave] : "No registrado";
     }
 
-    // NUEVA FUNCIÓN: Convierte MM/DD/YYYY a DD/MM/YYYY
     function formatearFecha(fechaStr) {
       if (!fechaStr || fechaStr === "No registrado") return fechaStr;
-      
       let fechaString = String(fechaStr).trim();
-      
-      // Si la fecha viene separada por "/" (formato de SheetDB: M/D/YYYY)
       let partes = fechaString.split("/");
       if (partes.length === 3) {
         let mes = partes[0].padStart(2, '0');
         let dia = partes[1].padStart(2, '0');
-        let anio = partes[2].substring(0, 4); // Aseguramos que solo tome el año
+        let anio = partes[2].substring(0, 4);
         return `${dia}/${mes}/${anio}`;
       }
-      
-      // Si por alguna razón viene separada por "-" (YYYY-MM-DD)
       partes = fechaString.split("-");
       if (partes.length === 3) {
         let anio = partes[0];
@@ -108,8 +66,6 @@
         let dia = partes[2].substring(0, 2);
         return `${dia}/${mes}/${anio}`;
       }
-
-      // Si no es un formato reconocible, se devuelve tal cual
       return fechaStr;
     }
 
@@ -126,18 +82,18 @@
       resultadosDiv.innerHTML = "<p style='text-align:center; color: #475569; font-weight:bold;'>Verificando Identidad...</p>";
 
       // ==============================================================
-      // ¡NO OLVIDES PONER TU ENLACE BASE DE SHEETDB AQUÍ ABAJO!
+      // ⚠️ PEGA AQUÍ TUS DOS ENLACES CSV DE GOOGLE SHEETS
       // ==============================================================
-      const miUrlSheetDB = "https://sheetdb.io/api/v1/5r3h4jnifdyj9";
+      const url_SIPE = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRLIl6cx64B7jTTpIRkjhCNgciU2JjyB-fxcJSMGXoQXx1hHjZ9Y_3Htzwg20IiDW7OC-7E-vqp5lo3/pub?gid=1039256467&single=true&output=csv";
+      const url_DATOS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRLIl6cx64B7jTTpIRkjhCNgciU2JjyB-fxcJSMGXoQXx1hHjZ9Y_3Htzwg20IiDW7OC-7E-vqp5lo3/pub?gid=796637532&single=true&output=csv";
 
-      fetch(miUrlSheetDB + "?sheet=SIPE")
-        .then(respuesta => respuesta.json())
-        .then(datosSipe => {
-          
-          if(!Array.isArray(datosSipe)) {
-            resultadosDiv.innerHTML = "<p style='color:#b71c1c; text-align:center;'>Error: Verifica que la pestaña en Google Sheets se llame 'SIPE'.</p>";
-            return;
-          }
+      // Descargar y leer la hoja SIPE
+      Papa.parse(url_SIPE, {
+        download: true,
+        header: true,
+        skipEmptyLines: true,
+        complete: function(resultadosSipe) {
+          const datosSipe = resultadosSipe.data;
 
           let personaEncontrada = null;
           for (let i = 0; i < datosSipe.length; i++) {
@@ -150,25 +106,23 @@
 
           if (!personaEncontrada) {
             pantallaBusqueda.style.display = "none";
-            let msjAyuda = `Hola, mi DNI ${dniIngresado} no aparece en el sistema de consulta FLV.`;
+            let msjAyuda = `Hola, mi DNI ${dniIngresado} no aparece en el sistema de consulta FLV. Solicito asistencia.`;
             let urlWaAyuda = `https://wa.me/51991260103?text=${encodeURIComponent(msjAyuda)}`;
 
             resultadosDiv.innerHTML = `
               <div style='background: #fffbeb; border: 1px solid #fef08a; padding: 25px 20px; border-radius: 8px; text-align: center; margin-top: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); animation: fadeIn 0.5s ease-in;'>
-                <h4 style='margin-top:0; color: #ca8a04; font-size: 18px;'>❌ DNI NO ENCONTRADO</h4>
-                <p style='color: #854d0e; font-size: 15px; margin-bottom: 20px;'><b>Comunicarse con el área de Fiscalización.</b></p>
-                
+                <h4 style='margin-top:0; color: #ca8a04; font-size: 18px;'>❌ Sin resultados</h4>
+                <p style='color: #854d0e; font-size: 15px; margin-bottom: 20px;'><b>Comunicarse con:</b></p>
                 <a href="${urlWaAyuda}" target="_blank" style="display: inline-flex; align-items: center; justify-content: center; width: 100%; box-sizing: border-box; background: #25D366; color: white; padding: 14px 15px; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 16px; transition: background 0.3s;">
-                  💬 Escribe Aquí
+                  💬 WhatsApp (991 260 103)
                 </a>
-
                 <button onclick="location.reload()" class="btn-volver" style="margin-top: 20px;">Realizar otra consulta</button>
               </div>`;
             return; 
           }
 
           pantallaBusqueda.style.display = "none";
-          resultadosDiv.innerHTML = "<p style='text-align:center; color: #475569; font-weight:bold;'>Cargando datos...</p>";
+          resultadosDiv.innerHTML = "<p style='text-align:center; color: #475569; font-weight:bold;'>Cargando datos de despliegue...</p>";
 
           let idLocalSipe = obtenerDato(personaEncontrada, "ID LOCAL");
           const nombre = obtenerDato(personaEncontrada, "nombre completo");
@@ -176,26 +130,24 @@
           const esResponsable = obtenerDato(personaEncontrada, "es responsable").toUpperCase();
           
           let esRespBool = (esResponsable === "SI" || esResponsable === "SÍ");
-          let badgeResponsable = "";
+          let badgeResponsable = esRespBool 
+            ? `<span style="background: #fef08a; color: #854d0e; padding: 5px 12px; border-radius: 6px; font-size: 12px; font-weight: bold; display: inline-block; margin-top: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">⭐ SÍ ES RESPONSABLE DE LOCAL DE VOTACIÓN</span>`
+            : `<span style="background: #e2e8f0; color: #475569; padding: 5px 12px; border-radius: 6px; font-size: 12px; font-weight: bold; display: inline-block; margin-top: 8px;">NO ES RESPONSABLE DE LOCAL DE VOTACIÓN</span>`;
 
-          if (esRespBool) {
-            badgeResponsable = `<span style="background: #fef08a; color: #854d0e; padding: 5px 12px; border-radius: 6px; font-size: 12px; font-weight: bold; display: inline-block; margin-top: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">⭐ SÍ ES RESPONSABLE DE LOCAL DE VOTACIÓN</span>`;
-          } else {
-            badgeResponsable = `<span style="background: #e2e8f0; color: #475569; padding: 5px 12px; border-radius: 6px; font-size: 12px; font-weight: bold; display: inline-block; margin-top: 8px;">NO ES RESPONSABLE DE LOCAL DE VOTACIÓN</span>`;
-          }
-
-          fetch(miUrlSheetDB + "?sheet=DATOS")
-            .then(respuesta => respuesta.json())
-            .then(datosRuta => {
+          // Descargar y leer la hoja DATOS
+          Papa.parse(url_DATOS, {
+            download: true,
+            header: true,
+            skipEmptyLines: true,
+            complete: function(resultadosDatos) {
+              const datosRuta = resultadosDatos.data;
               
               let infoRuta = null;
-              if(Array.isArray(datosRuta)) {
-                for (let j = 0; j < datosRuta.length; j++) {
-                  let codigoLV = obtenerDato(datosRuta[j], "CODIGO DE LV");
-                  if (codigoLV !== "No registrado" && codigoLV == idLocalSipe) {
-                    infoRuta = datosRuta[j];
-                    break;
-                  }
+              for (let j = 0; j < datosRuta.length; j++) {
+                let codigoLV = obtenerDato(datosRuta[j], "CODIGO DE LV");
+                if (codigoLV !== "No registrado" && codigoLV == idLocalSipe) {
+                  infoRuta = datosRuta[j];
+                  break;
                 }
               }
               
@@ -207,10 +159,8 @@
               let direccion = obtenerDato(infoRuta, "direccion del local de votacion");
               if(direccion === "No registrado") direccion = obtenerDato(infoRuta, "direccion");
 
-              let htmlCentroPoblado = "";
-              if (centroPoblado !== "No registrado" && centroPoblado.trim() !== "") {
-                htmlCentroPoblado = `<p style="margin: 0; padding-bottom: 3px;"><b>Centro Poblado:</b> ${centroPoblado}</p>`;
-              }
+              let htmlCentroPoblado = (centroPoblado !== "No registrado" && centroPoblado.trim() !== "") 
+                ? `<p style="margin: 0; padding-bottom: 3px;"><b>Centro Poblado:</b> ${centroPoblado}</p>` : "";
 
               let htmlBloqueInferior = "";
 
@@ -218,8 +168,6 @@
                 const numRuta = obtenerDato(infoRuta, "numero de ruta");
                 const descRuta = obtenerDato(infoRuta, "descripcion de ruta"); 
                 const tipoMovilidad = obtenerDato(infoRuta, "tipo de movilidad");
-                
-                // APLICAMOS LA FUNCIÓN DE FORMATO DE FECHA AQUÍ
                 const fechaPartida = formatearFecha(obtenerDato(infoRuta, "fecha de partida"));
                 const horaPartida = obtenerDato(infoRuta, "hora de partida");
                 const fechaLlegada = formatearFecha(obtenerDato(infoRuta, "fecha de llegada"));
@@ -228,10 +176,8 @@
                 htmlBloqueInferior = `
                   <div style="background: #eff6ff; border: 1px solid #bfdbfe; border-left: 5px solid #1e3a8a; padding: 20px; border-radius: 8px; text-align: left; margin-bottom: 25px; box-shadow: 0 4px 6px rgba(0,0,0,0.02);">
                     <h4 style="color: #1e3a8a; margin-top: 0; margin-bottom: 15px; border-bottom: 1px solid #bfdbfe; padding-bottom: 10px; text-transform: uppercase; letter-spacing: 1px;">🚌 INFORMACIÓN DE DESPLIEGUE</h4>
-                    
                     <div style="line-height: 1.8; color: #1e3a8a; font-size: 14.5px;">
                       <p style="margin: 0; padding-bottom: 5px;"><b>Número de Ruta:</b> ${numRuta}</p>
-                      
                       <div style="background: white; border: 1px solid #bfdbfe; border-radius: 6px; padding: 12px; margin: 10px 0; font-size: 14px;">
                         <p style="margin: 0; color: #1e3a8a; padding-bottom: 6px; border-bottom: 1px solid #eff6ff;">
                           <b>Salida:</b> &nbsp;📅 ${fechaPartida} &nbsp;|&nbsp; ⏰ ${horaPartida}
@@ -240,16 +186,13 @@
                           <b>Llegada:</b> 📅 ${fechaLlegada} &nbsp;|&nbsp; ⏰ ${horaLlegada}
                         </p>
                       </div>
-
                       <p style="margin: 0; padding-top: 5px; padding-bottom: 5px;"><b>Recorrido de Ruta:</b> ${descRuta}</p>
                       <p style="margin: 0;"><b>Tipo de Movilidad:</b> <span style="background:#dbeafe; padding: 3px 8px; border-radius:4px; font-weight:bold;">${tipoMovilidad}</span></p>
                     </div>
-                  </div>
-                `;
+                  </div>`;
               } else {
                 let responsableNombre = "No asignado en la base de datos";
                 let responsableCelular = "";
-                
                 for(let k = 0; k < datosSipe.length; k++){
                     if(obtenerDato(datosSipe[k], "ID LOCAL") == idLocalSipe && 
                       (obtenerDato(datosSipe[k], "es responsable").toUpperCase() === "SI" || obtenerDato(datosSipe[k], "es responsable").toUpperCase() === "SÍ")){
@@ -263,32 +206,26 @@
                 if(responsableCelular !== "" && responsableCelular !== "No registrado"){
                     let mensaje = `Hola ${responsableNombre}, soy ${nombre}, apoyo FLV asignado al local de votación ${localVotacion}.`;
                     let urlWa = `https://wa.me/51${responsableCelular}?text=${encodeURIComponent(mensaje)}`;
-                    
                     btnWhatsapp = `
                       <a href="${urlWa}" target="_blank" style="display: inline-flex; align-items: center; justify-content: center; width: 100%; box-sizing: border-box; margin-top: 15px; background: #25D366; color: white; padding: 12px 15px; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 15px; transition: background 0.3s;">
                         💬 Escribir al WhatsApp
-                      </a>
-                    `;
+                      </a>`;
                 }
 
                 htmlBloqueInferior = `
                   <div style="background: #fffbeb; border: 1px solid #fef08a; border-left: 5px solid #ca8a04; padding: 20px; border-radius: 8px; text-align: left; margin-bottom: 25px; box-shadow: 0 4px 6px rgba(0,0,0,0.02);">
                     <h4 style="color: #ca8a04; margin-top: 0; margin-bottom: 10px; border-bottom: 1px solid #fef08a; padding-bottom: 10px; text-transform: uppercase; letter-spacing: 1px;">⚠️ ATENCIÓN</h4>
                     <p style="color: #854d0e; font-size: 14.5px; margin: 0 0 15px 0;">Comunicarse con su responsable de local de votación para coordinar los detalles del despliegue.</p>
-                    
                     <div style="background: white; border: 1px solid #fef08a; padding: 12px; border-radius: 6px;">
                       <p style="margin: 0; color: #422006; font-size: 13px; text-transform: uppercase; font-weight: bold; letter-spacing: 0.5px;">Responsable Asignado:</p>
                       <p style="margin: 4px 0 0 0; color: #854d0e; font-size: 16px; font-weight: bold;">${responsableNombre}</p>
                     </div>
-                    
                     ${btnWhatsapp}
-                  </div>
-                `;
+                  </div>`;
               }
 
               resultadosDiv.innerHTML = `
                 <div style="text-align: center; animation: fadeIn 0.6s ease-in;">
-                  
                   <h2 style="color: #b71c1c; margin-bottom: 5px; font-size: 24px;">Bienvenido FLV</h2>
                   <div style="margin-bottom: 15px;">
                     <h3 style="color: #1e293b; margin-top: 0; margin-bottom: 0; font-size: 20px;">${nombre}</h3>
@@ -313,17 +250,18 @@
                   ${htmlBloqueInferior}
 
                   <button onclick="location.reload()" class="btn-volver">Realizar otra consulta</button>
-                  
                 </div>
               `;
-            })
-            .catch(error => {
-              resultadosDiv.innerHTML = "<p style='color:#b71c1c; text-align:center;'>Error conectando con los datos de despliegue.</p>";
-            });
-        })
-        .catch(error => {
-          resultadosDiv.innerHTML = "<p style='color:#b71c1c; text-align:center; background: #fee2e2; padding: 10px; border-radius: 6px;'>Error de conexión. Revisa el enlace de SheetDB.</p>";
-        });
+            },
+            error: function() {
+              resultadosDiv.innerHTML = "<p style='color:#b71c1c; text-align:center;'>Error leyendo el CSV de DATOS.</p>";
+            }
+          });
+        },
+        error: function() {
+          resultadosDiv.innerHTML = "<p style='color:#b71c1c; text-align:center; background: #fee2e2; padding: 10px; border-radius: 6px;'>Error de conexión. Verifica el enlace CSV de SIPE.</p>";
+        }
+      });
     }
   </script>
 </body>
