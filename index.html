@@ -130,9 +130,21 @@
           }
 
           pantallaBusqueda.style.display = "none";
-          resultadosDiv.innerHTML = "<p style='text-align:center; color: #475569; font-weight:bold;'>Extrayendo información de despliegue (Hoja DATOS)...</p>";
+          resultadosDiv.innerHTML = "<p style='text-align:center; color: #475569; font-weight:bold;'>Extrayendo información de despliegue...</p>";
 
           let idLocalSipe = obtenerDato(personaEncontrada, "ID LOCAL");
+          const nombre = obtenerDato(personaEncontrada, "nombre completo");
+          const celular = obtenerDato(personaEncontrada, "celular");
+          const esResponsable = obtenerDato(personaEncontrada, "es responsable").toUpperCase();
+          
+          let esRespBool = (esResponsable === "SI" || esResponsable === "SÍ");
+          let badgeResponsable = "";
+
+          if (esRespBool) {
+            badgeResponsable = `<span style="background: #fef08a; color: #854d0e; padding: 5px 12px; border-radius: 6px; font-size: 12px; font-weight: bold; display: inline-block; margin-top: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">⭐ SÍ ES RESPONSABLE DE LOCAL DE VOTACIÓN</span>`;
+          } else {
+            badgeResponsable = `<span style="background: #e2e8f0; color: #475569; padding: 5px 12px; border-radius: 6px; font-size: 12px; font-weight: bold; display: inline-block; margin-top: 8px;">NO ES RESPONSABLE DE LOCAL DE VOTACIÓN</span>`;
+          }
 
           fetch(miUrlSheetDB + "?sheet=DATOS")
             .then(respuesta => respuesta.json())
@@ -149,18 +161,6 @@
                 }
               }
               
-              const nombre = obtenerDato(personaEncontrada, "nombre completo");
-              const celular = obtenerDato(personaEncontrada, "celular");
-              
-              // Lógica actualizada de Responsable
-              const esResponsable = obtenerDato(personaEncontrada, "es responsable");
-              let badgeResponsable = "";
-              if (esResponsable.toUpperCase() === "SI" || esResponsable.toUpperCase() === "SÍ") {
-                badgeResponsable = `<span style="background: #fef08a; color: #854d0e; padding: 5px 12px; border-radius: 6px; font-size: 12px; font-weight: bold; display: inline-block; margin-top: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">⭐ SÍ ES RESPONSABLE DE LOCAL DE VOTACIÓN</span>`;
-              } else if (esResponsable.toUpperCase() === "NO") {
-                badgeResponsable = `<span style="background: #e2e8f0; color: #475569; padding: 5px 12px; border-radius: 6px; font-size: 12px; font-weight: bold; display: inline-block; margin-top: 8px;">NO ES RESPONSABLE DE LOCAL DE VOTACIÓN</span>`;
-              }
-              
               const departamento = obtenerDato(personaEncontrada, "departamento");
               const provincia = obtenerDato(personaEncontrada, "provincia");
               const distrito = obtenerDato(personaEncontrada, "distrito");
@@ -174,47 +174,26 @@
                 htmlCentroPoblado = `<p style="margin: 0; padding-bottom: 3px;"><b>Centro Poblado:</b> ${centroPoblado}</p>`;
               }
 
-              const numRuta = obtenerDato(infoRuta, "numero de ruta");
-              const descRuta = obtenerDato(infoRuta, "descripcion de ruta"); // Esto ahora será "Recorrido de Ruta"
-              const tipoMovilidad = obtenerDato(infoRuta, "tipo de movilidad");
-              const fechaPartida = obtenerDato(infoRuta, "fecha de partida");
-              const horaPartida = obtenerDato(infoRuta, "hora de partida");
-              const fechaLlegada = obtenerDato(infoRuta, "fecha de llegada");
-              const horaLlegada = obtenerDato(infoRuta, "hora de llegada");
+              // LÓGICA DE CONDICIÓN (Responsable vs No Responsable)
+              let htmlBloqueInferior = "";
 
-              resultadosDiv.innerHTML = `
-                <div style="text-align: center; animation: fadeIn 0.6s ease-in;">
-                  
-                  <h2 style="color: #b71c1c; margin-bottom: 5px; font-size: 24px;">Bienvenido FLV</h2>
-                  <div style="margin-bottom: 15px;">
-                    <h3 style="color: #1e293b; margin-top: 0; margin-bottom: 0; font-size: 20px;">${nombre}</h3>
-                    ${badgeResponsable}
-                  </div>
-                  <p style="color: #64748b; font-size: 15px; margin-top: 0; margin-bottom: 25px; letter-spacing: 1px; font-weight: bold;">
-                    DNI: ${dniIngresado} &nbsp;|&nbsp; 📱 ${celular}
-                  </p>
+              if (esRespBool) {
+                // SI ES RESPONSABLE -> Mostrar Ruta
+                const numRuta = obtenerDato(infoRuta, "numero de ruta");
+                const descRuta = obtenerDato(infoRuta, "descripcion de ruta"); 
+                const tipoMovilidad = obtenerDato(infoRuta, "tipo de movilidad");
+                const fechaPartida = obtenerDato(infoRuta, "fecha de partida");
+                const horaPartida = obtenerDato(infoRuta, "hora de partida");
+                const fechaLlegada = obtenerDato(infoRuta, "fecha de llegada");
+                const horaLlegada = obtenerDato(infoRuta, "hora de llegada");
 
-                  <!-- BLOQUE LUGAR ASIGNADO -->
-                  <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-left: 5px solid #166534; padding: 20px; border-radius: 8px; text-align: left; margin-bottom: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.02);">
-                    <h4 style="color: #166534; margin-top: 0; margin-bottom: 15px; border-bottom: 1px solid #bbf7d0; padding-bottom: 10px; text-transform: uppercase; letter-spacing: 1px;">📍 LUGAR ASIGNADO</h4>
-                    <div style="line-height: 1.8; color: #166534; font-size: 14.5px;">
-                      <p style="margin: 0; padding-bottom: 3px;"><b>Departamento:</b> ${departamento}</p>
-                      <p style="margin: 0; padding-bottom: 3px;"><b>Provincia:</b> ${provincia}</p>
-                      <p style="margin: 0; padding-bottom: 3px;"><b>Distrito:</b> ${distrito}</p>
-                      ${htmlCentroPoblado}
-                      <p style="margin: 0; padding-bottom: 3px;"><b>Local de Votación:</b> ${localVotacion}</p>
-                      <p style="margin: 0;"><b>Dirección:</b> ${direccion}</p>
-                    </div>
-                  </div>
-
-                  <!-- BLOQUE INFORMACIÓN DE DESPLIEGUE -->
+                htmlBloqueInferior = `
                   <div style="background: #eff6ff; border: 1px solid #bfdbfe; border-left: 5px solid #1e3a8a; padding: 20px; border-radius: 8px; text-align: left; margin-bottom: 25px; box-shadow: 0 4px 6px rgba(0,0,0,0.02);">
                     <h4 style="color: #1e3a8a; margin-top: 0; margin-bottom: 15px; border-bottom: 1px solid #bfdbfe; padding-bottom: 10px; text-transform: uppercase; letter-spacing: 1px;">🚌 INFORMACIÓN DE DESPLIEGUE</h4>
                     
                     <div style="line-height: 1.8; color: #1e3a8a; font-size: 14.5px;">
                       <p style="margin: 0; padding-bottom: 5px;"><b>Número de Ruta:</b> ${numRuta}</p>
                       
-                      <!-- Caja blanca interior para resaltar Fechas y Horas -->
                       <div style="background: white; border: 1px solid #bfdbfe; border-radius: 6px; padding: 12px; margin: 10px 0; font-size: 14px;">
                         <p style="margin: 0; color: #1e3a8a; padding-bottom: 6px; border-bottom: 1px solid #eff6ff;">
                           <b>Salida:</b> &nbsp;📅 ${fechaPartida} &nbsp;|&nbsp; ⏰ ${horaPartida}
@@ -228,6 +207,77 @@
                       <p style="margin: 0;"><b>Tipo de Movilidad:</b> <span style="background:#dbeafe; padding: 3px 8px; border-radius:4px; font-weight:bold;">${tipoMovilidad}</span></p>
                     </div>
                   </div>
+                `;
+              } else {
+                // SI NO ES RESPONSABLE -> Buscar al responsable y crear WhatsApp
+                let responsableNombre = "No asignado en la base de datos";
+                let responsableCelular = "";
+                
+                for(let k = 0; k < datosSipe.length; k++){
+                    if(obtenerDato(datosSipe[k], "ID LOCAL") == idLocalSipe && 
+                      (obtenerDato(datosSipe[k], "es responsable").toUpperCase() === "SI" || obtenerDato(datosSipe[k], "es responsable").toUpperCase() === "SÍ")){
+                        responsableNombre = obtenerDato(datosSipe[k], "nombre completo");
+                        // Dejar solo los números para el link de WhatsApp
+                        responsableCelular = String(obtenerDato(datosSipe[k], "celular")).replace(/[^0-9]/g, "");
+                        break;
+                    }
+                }
+
+                let btnWhatsapp = "";
+                if(responsableCelular !== "" && responsableCelular !== "No registrado"){
+                    // Mensaje predeterminado inteligente
+                    let mensaje = `Hola ${responsableNombre}, soy ${nombre}, apoyo FLV asignado al local de votación ${localVotacion}.`;
+                    let urlWa = `https://wa.me/51${responsableCelular}?text=${encodeURIComponent(mensaje)}`;
+                    
+                    btnWhatsapp = `
+                      <a href="${urlWa}" target="_blank" style="display: inline-flex; align-items: center; justify-content: center; width: 100%; box-sizing: border-box; margin-top: 15px; background: #25D366; color: white; padding: 12px 15px; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 15px; transition: background 0.3s;">
+                        💬 Escribir al WhatsApp
+                      </a>
+                    `;
+                }
+
+                htmlBloqueInferior = `
+                  <div style="background: #fffbeb; border: 1px solid #fef08a; border-left: 5px solid #ca8a04; padding: 20px; border-radius: 8px; text-align: left; margin-bottom: 25px; box-shadow: 0 4px 6px rgba(0,0,0,0.02);">
+                    <h4 style="color: #ca8a04; margin-top: 0; margin-bottom: 10px; border-bottom: 1px solid #fef08a; padding-bottom: 10px; text-transform: uppercase; letter-spacing: 1px;">⚠️ ATENCIÓN</h4>
+                    <p style="color: #854d0e; font-size: 14.5px; margin: 0 0 15px 0;">Comunicarse con su responsable de local de votación para coordinar los detalles del despliegue.</p>
+                    
+                    <div style="background: white; border: 1px solid #fef08a; padding: 12px; border-radius: 6px;">
+                      <p style="margin: 0; color: #422006; font-size: 13px; text-transform: uppercase; font-weight: bold; letter-spacing: 0.5px;">Responsable Asignado:</p>
+                      <p style="margin: 4px 0 0 0; color: #854d0e; font-size: 16px; font-weight: bold;">${responsableNombre}</p>
+                    </div>
+                    
+                    ${btnWhatsapp}
+                  </div>
+                `;
+              }
+
+              // ARMADO FINAL DE LA PANTALLA
+              resultadosDiv.innerHTML = `
+                <div style="text-align: center; animation: fadeIn 0.6s ease-in;">
+                  
+                  <h2 style="color: #b71c1c; margin-bottom: 5px; font-size: 24px;">Bienvenido FLV</h2>
+                  <div style="margin-bottom: 15px;">
+                    <h3 style="color: #1e293b; margin-top: 0; margin-bottom: 0; font-size: 20px;">${nombre}</h3>
+                    ${badgeResponsable}
+                  </div>
+                  <p style="color: #64748b; font-size: 15px; margin-top: 0; margin-bottom: 25px; letter-spacing: 1px; font-weight: bold;">
+                    DNI: ${dniIngresado} &nbsp;|&nbsp; 📱 ${celular}
+                  </p>
+
+                  <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-left: 5px solid #166534; padding: 20px; border-radius: 8px; text-align: left; margin-bottom: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.02);">
+                    <h4 style="color: #166534; margin-top: 0; margin-bottom: 15px; border-bottom: 1px solid #bbf7d0; padding-bottom: 10px; text-transform: uppercase; letter-spacing: 1px;">📍 LUGAR ASIGNADO</h4>
+                    <div style="line-height: 1.8; color: #166534; font-size: 14.5px;">
+                      <p style="margin: 0; padding-bottom: 3px;"><b>Departamento:</b> ${departamento}</p>
+                      <p style="margin: 0; padding-bottom: 3px;"><b>Provincia:</b> ${provincia}</p>
+                      <p style="margin: 0; padding-bottom: 3px;"><b>Distrito:</b> ${distrito}</p>
+                      ${htmlCentroPoblado}
+                      <p style="margin: 0; padding-bottom: 3px;"><b>Local de Votación:</b> ${localVotacion}</p>
+                      <p style="margin: 0;"><b>Dirección:</b> ${direccion}</p>
+                    </div>
+                  </div>
+
+                  <!-- MUESTRA RUTAS (Si es resp) O MENSAJE Y WHATSAPP (Si es apoyo) -->
+                  ${htmlBloqueInferior}
 
                   <button onclick="location.reload()" class="btn-volver">Realizar otra consulta</button>
                   
