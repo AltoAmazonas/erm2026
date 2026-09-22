@@ -2,22 +2,18 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Verificación de Identidad</title>
+  <title>Consulta FLV</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-    /* ================================================= */
-    /* OCULTAR FLECHAS DE SUBIR Y BAJAR EN EL CAMPO DNI  */
-    /* ================================================= */
     input[type=number]::-webkit-inner-spin-button, 
     input[type=number]::-webkit-outer-spin-button { 
       -webkit-appearance: none; 
       margin: 0; 
     }
     input[type=number] {
-      -moz-appearance: textfield; /* Soporte para Firefox */
+      -moz-appearance: textfield;
     }
 
-    /* Estilos institucionales */
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       background-color: #f4f6f9;
@@ -36,7 +32,7 @@
       box-shadow: 0 10px 25px rgba(0,0,0,0.15);
       max-width: 420px;
       width: 100%;
-      border-top: 6px solid #b71c1c; /* Rojo Institucional */
+      border-top: 6px solid #b71c1c;
     }
     .titulo {
       text-align: center;
@@ -69,7 +65,7 @@
     .btn-consultar {
       padding: 15px;
       font-size: 16px;
-      background: #b71c1c; /* Rojo Institucional */
+      background: #b71c1c;
       color: white;
       border: none;
       border-radius: 6px;
@@ -80,7 +76,22 @@
       transition: background 0.3s;
     }
     .btn-consultar:hover {
-      background: #901616; /* Rojo más oscuro al pasar el mouse */
+      background: #901616;
+    }
+    .btn-volver {
+      margin-top: 25px; 
+      padding: 10px 20px; 
+      font-size: 14px; 
+      background: white; 
+      color: #b71c1c; 
+      border: 2px solid #b71c1c; 
+      border-radius: 6px; 
+      cursor: pointer; 
+      font-weight: bold; 
+      transition: all 0.3s;
+    }
+    .btn-volver:hover {
+      background: #fef2f2;
     }
   </style>
 </head>
@@ -88,18 +99,18 @@
 
   <div class="tarjeta">
     
-    <!-- TEXTOS ACTUALIZADOS -->
-    <h2 class="titulo">Consulta FLV</h2>
-    <p class="subtitulo">Ingrese el número de DNI</p>
-    
-    <div style="display: flex; flex-direction: column; gap: 15px; margin-bottom: 20px;">
-      <!-- CAMPO TIPO NÚMERO (Sin flechas y con límite exacto de 8 dígitos) -->
-      <input type="number" id="dni" class="input-dni" placeholder="Ej: 12345678" oninput="if(this.value.length > 8) this.value = this.value.slice(0, 8);">
+    <!-- PANTALLA 1: FORMULARIO DE BÚSQUEDA -->
+    <div id="pantalla-busqueda">
+      <h2 class="titulo">Consulta FLV</h2>
+      <p class="subtitulo">Ingrese el número de DNI</p>
       
-      <!-- BOTÓN ACTUALIZADO -->
-      <button onclick="consultar()" class="btn-consultar">Consultar</button>
+      <div style="display: flex; flex-direction: column; gap: 15px; margin-bottom: 20px;">
+        <input type="number" id="dni" class="input-dni" placeholder="Ej: 12345678" oninput="if(this.value.length > 8) this.value = this.value.slice(0, 8);">
+        <button onclick="consultar()" class="btn-consultar">Consultar</button>
+      </div>
     </div>
     
+    <!-- PANTALLA 2: RESULTADOS (Inicialmente vacía) -->
     <div id="resultados"></div>
     
   </div>
@@ -117,13 +128,14 @@
     function consultar() {
       const dniIngresado = document.getElementById("dni").value.trim();
       const resultadosDiv = document.getElementById("resultados");
+      const pantallaBusqueda = document.getElementById("pantalla-busqueda");
       
       if(dniIngresado.length !== 8) {
-        resultadosDiv.innerHTML = "<p style='color:#b71c1c; text-align:center; font-weight:bold; background: #fee2e2; padding: 10px; border-radius: 6px;'>El DNI debe tener exactamente 8 dígitos.</p>";
+        resultadosDiv.innerHTML = "<p style='color:#b71c1c; text-align:center; font-weight:bold; background: #fee2e2; padding: 10px; border-radius: 6px; margin-top: 20px;'>El DNI debe tener exactamente 8 dígitos.</p>";
         return;
       }
 
-      resultadosDiv.innerHTML = "<p style='text-align:center; color: #475569; font-weight:bold;'>Conectando con la base de datos...</p>";
+      resultadosDiv.innerHTML = "<p style='text-align:center; color: #475569; font-weight:bold; margin-top: 20px;'>Conectando con la base de datos...</p>";
 
       // ==============================================================
       // ¡NO OLVIDES PONER TU ENLACE DE SHEETDB AQUÍ ABAJO!
@@ -145,34 +157,46 @@
           }
 
           if (personaEncontrada) {
+            // OCULTAR EL CUADRO DE BÚSQUEDA
+            pantallaBusqueda.style.display = "none";
+
+            // EXTRAER DATOS
             const nombre = obtenerDato(personaEncontrada, "nombre completo");
-            const celular = obtenerDato(personaEncontrada, "celular");
             const departamento = obtenerDato(personaEncontrada, "departamento");
             let provincia = obtenerDato(personaEncontrada, "provincial");
             if (provincia === "No registrado") provincia = obtenerDato(personaEncontrada, "provincia");
             const distrito = obtenerDato(personaEncontrada, "distrito");
             const centroPoblado = obtenerDato(personaEncontrada, "centro poblado");
             const direccion = obtenerDato(personaEncontrada, "direccion");
-            const tipoFlv = obtenerDato(personaEncontrada, "tipo flv");
 
+            // NUEVO DISEÑO SOLICITADO
             resultadosDiv.innerHTML = `
-              <div style='background: #f0fdf4; border: 1px solid #bbf7d0; padding: 20px; border-radius: 8px; font-size: 14px;'>
-                <h3 style='margin-top:0; color: #166534; text-align: center; border-bottom: 1px solid #bbf7d0; padding-bottom: 10px;'>✅ Datos Encontrados</h3>
-                <div style='line-height: 1.8; color: #334155;'>
-                  <p style='margin: 0;'><b>Nombre:</b> ${nombre}</p>
-                  <p style='margin: 0;'><b>Celular:</b> ${celular}</p>
-                  <p style='margin: 0;'><b>Departamento:</b> ${departamento}</p>
-                  <p style='margin: 0;'><b>Provincia:</b> ${provincia}</p>
-                  <p style='margin: 0;'><b>Distrito:</b> ${distrito}</p>
-                  <p style='margin: 0;'><b>C. Poblado:</b> ${centroPoblado}</p>
-                  <p style='margin: 0;'><b>Dirección:</b> ${direccion}</p>
-                  <p style='margin: 0;'><b>Tipo FLV:</b> <span style='background: #dbeafe; color: #1e40af; padding: 3px 8px; border-radius: 4px; font-weight: bold;'>${tipoFlv}</span></p>
+              <div style="text-align: center; animation: fadeIn 0.5s ease-in;">
+                
+                <h2 style="color: #b71c1c; margin-bottom: 5px; font-size: 24px;">Bienvenido FLV</h2>
+                <h3 style="color: #1e293b; margin-top: 0; margin-bottom: 5px; font-size: 20px;">${nombre}</h3>
+                <p style="color: #64748b; font-size: 16px; margin-top: 0; margin-bottom: 25px; letter-spacing: 2px; font-weight: bold;">DNI: ${dniIngresado}</p>
+
+                <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-left: 5px solid #0f172a; padding: 20px; border-radius: 8px; text-align: left;">
+                  <h4 style="color: #0f172a; margin-top: 0; margin-bottom: 15px; border-bottom: 1px solid #e2e8f0; padding-bottom: 10px; text-transform: uppercase; letter-spacing: 1px;">Lugar asignado</h4>
+                  
+                  <div style="line-height: 1.8; color: #334155; font-size: 15px;">
+                    <p style="margin: 0;"><b>Departamento:</b> ${departamento}</p>
+                    <p style="margin: 0;"><b>Provincia:</b> ${provincia}</p>
+                    <p style="margin: 0;"><b>Distrito:</b> ${distrito}</p>
+                    <p style="margin: 0;"><b>Centro Poblado:</b> ${centroPoblado}</p>
+                    <p style="margin: 0;"><b>Dirección:</b> ${direccion}</p>
+                  </div>
                 </div>
+
+                <button onclick="location.reload()" class="btn-volver">Realizar otra consulta</button>
+                
               </div>
             `;
           } else {
+            // Si no se encuentra, el cuadro de búsqueda no desaparece y muestra el error abajo
             resultadosDiv.innerHTML = `
-              <div style='background: #fef2f2; border: 1px solid #fecaca; padding: 15px; border-radius: 8px; text-align: center;'>
+              <div style='background: #fef2f2; border: 1px solid #fecaca; padding: 15px; border-radius: 8px; text-align: center; margin-top: 20px;'>
                 <h4 style='margin-top:0; color: #991b1b;'>❌ Sin resultados</h4>
                 <p style='color: #7f1d1d; font-size: 14px; margin-bottom: 0;'>El DNI <b>${dniIngresado}</b> no registra información.</p>
               </div>
@@ -180,7 +204,7 @@
           }
         })
         .catch(error => {
-          resultadosDiv.innerHTML = "<p style='color:#b71c1c; text-align:center; background: #fee2e2; padding: 10px; border-radius: 6px;'>Error de conexión. Revisa el enlace de SheetDB.</p>";
+          resultadosDiv.innerHTML = "<p style='color:#b71c1c; text-align:center; background: #fee2e2; padding: 10px; border-radius: 6px; margin-top: 20px;'>Error de conexión. Revisa el enlace de SheetDB.</p>";
         });
     }
   </script>
