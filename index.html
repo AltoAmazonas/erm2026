@@ -75,7 +75,6 @@
   </div>
 
   <script>
-    // Se agregó .replace(/[¿?]/g, "") para que ignore los signos de interrogación al buscar columnas
     function normalizar(texto) {
       return texto.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[¿?]/g, "").trim();
     }
@@ -131,7 +130,7 @@
           }
 
           pantallaBusqueda.style.display = "none";
-          resultadosDiv.innerHTML = "<p style='text-align:center; color: #475569; font-weight:bold;'>Extrayendo información de ruta (Hoja DATOS)...</p>";
+          resultadosDiv.innerHTML = "<p style='text-align:center; color: #475569; font-weight:bold;'>Extrayendo información de despliegue (Hoja DATOS)...</p>";
 
           let idLocalSipe = obtenerDato(personaEncontrada, "ID LOCAL");
 
@@ -150,22 +149,18 @@
                 }
               }
               
-              // Cabecera
               const nombre = obtenerDato(personaEncontrada, "nombre completo");
               const celular = obtenerDato(personaEncontrada, "celular");
               
-              // Lógica de ¿Es Responsable?
+              // Lógica actualizada de Responsable
               const esResponsable = obtenerDato(personaEncontrada, "es responsable");
               let badgeResponsable = "";
               if (esResponsable.toUpperCase() === "SI" || esResponsable.toUpperCase() === "SÍ") {
-                badgeResponsable = `<span style="background: #fef08a; color: #854d0e; padding: 3px 8px; border-radius: 4px; font-size: 12px; margin-left: 5px; vertical-align: text-bottom; font-weight: bold;">⭐ RESPONSABLE</span>`;
+                badgeResponsable = `<span style="background: #fef08a; color: #854d0e; padding: 5px 12px; border-radius: 6px; font-size: 12px; font-weight: bold; display: inline-block; margin-top: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">⭐ SÍ ES RESPONSABLE DE LOCAL DE VOTACIÓN</span>`;
               } else if (esResponsable.toUpperCase() === "NO") {
-                badgeResponsable = `<span style="background: #e2e8f0; color: #475569; padding: 3px 8px; border-radius: 4px; font-size: 12px; margin-left: 5px; vertical-align: text-bottom; font-weight: bold;">Apoyo</span>`;
-              } else if (esResponsable !== "No registrado") {
-                badgeResponsable = `<span style="background: #e2e8f0; color: #475569; padding: 3px 8px; border-radius: 4px; font-size: 12px; margin-left: 5px; vertical-align: text-bottom; font-weight: bold;">${esResponsable}</span>`;
+                badgeResponsable = `<span style="background: #e2e8f0; color: #475569; padding: 5px 12px; border-radius: 6px; font-size: 12px; font-weight: bold; display: inline-block; margin-top: 8px;">NO ES RESPONSABLE DE LOCAL DE VOTACIÓN</span>`;
               }
               
-              // Lugar Asignado
               const departamento = obtenerDato(personaEncontrada, "departamento");
               const provincia = obtenerDato(personaEncontrada, "provincia");
               const distrito = obtenerDato(personaEncontrada, "distrito");
@@ -174,15 +169,13 @@
               let direccion = obtenerDato(infoRuta, "direccion del local de votacion");
               if(direccion === "No registrado") direccion = obtenerDato(infoRuta, "direccion");
 
-              // Ocultar Centro Poblado si no hay datos
               let htmlCentroPoblado = "";
               if (centroPoblado !== "No registrado" && centroPoblado.trim() !== "") {
-                htmlCentroPoblado = `<p style="margin: 0;"><b>Centro Poblado:</b> ${centroPoblado}</p>`;
+                htmlCentroPoblado = `<p style="margin: 0; padding-bottom: 3px;"><b>Centro Poblado:</b> ${centroPoblado}</p>`;
               }
 
-              // Rutas
               const numRuta = obtenerDato(infoRuta, "numero de ruta");
-              const descRuta = obtenerDato(infoRuta, "descripcion de ruta");
+              const descRuta = obtenerDato(infoRuta, "descripcion de ruta"); // Esto ahora será "Recorrido de Ruta"
               const tipoMovilidad = obtenerDato(infoRuta, "tipo de movilidad");
               const fechaPartida = obtenerDato(infoRuta, "fecha de partida");
               const horaPartida = obtenerDato(infoRuta, "hora de partida");
@@ -193,48 +186,46 @@
                 <div style="text-align: center; animation: fadeIn 0.6s ease-in;">
                   
                   <h2 style="color: #b71c1c; margin-bottom: 5px; font-size: 24px;">Bienvenido FLV</h2>
-                  <h3 style="color: #1e293b; margin-top: 0; margin-bottom: 5px; font-size: 20px; display: flex; align-items: center; justify-content: center; flex-wrap: wrap;">
-                    ${nombre} ${badgeResponsable}
-                  </h3>
+                  <div style="margin-bottom: 15px;">
+                    <h3 style="color: #1e293b; margin-top: 0; margin-bottom: 0; font-size: 20px;">${nombre}</h3>
+                    ${badgeResponsable}
+                  </div>
                   <p style="color: #64748b; font-size: 15px; margin-top: 0; margin-bottom: 25px; letter-spacing: 1px; font-weight: bold;">
                     DNI: ${dniIngresado} &nbsp;|&nbsp; 📱 ${celular}
                   </p>
 
+                  <!-- BLOQUE LUGAR ASIGNADO -->
                   <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-left: 5px solid #166534; padding: 20px; border-radius: 8px; text-align: left; margin-bottom: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.02);">
                     <h4 style="color: #166534; margin-top: 0; margin-bottom: 15px; border-bottom: 1px solid #bbf7d0; padding-bottom: 10px; text-transform: uppercase; letter-spacing: 1px;">📍 LUGAR ASIGNADO</h4>
                     <div style="line-height: 1.8; color: #166534; font-size: 14.5px;">
-                      <p style="margin: 0;"><b>Departamento:</b> ${departamento}</p>
-                      <p style="margin: 0;"><b>Provincia:</b> ${provincia}</p>
-                      <p style="margin: 0;"><b>Distrito:</b> ${distrito}</p>
+                      <p style="margin: 0; padding-bottom: 3px;"><b>Departamento:</b> ${departamento}</p>
+                      <p style="margin: 0; padding-bottom: 3px;"><b>Provincia:</b> ${provincia}</p>
+                      <p style="margin: 0; padding-bottom: 3px;"><b>Distrito:</b> ${distrito}</p>
                       ${htmlCentroPoblado}
-                      <p style="margin: 0;"><b>Local de Votación:</b> ${localVotacion}</p>
+                      <p style="margin: 0; padding-bottom: 3px;"><b>Local de Votación:</b> ${localVotacion}</p>
                       <p style="margin: 0;"><b>Dirección:</b> ${direccion}</p>
                     </div>
                   </div>
 
+                  <!-- BLOQUE INFORMACIÓN DE DESPLIEGUE -->
                   <div style="background: #eff6ff; border: 1px solid #bfdbfe; border-left: 5px solid #1e3a8a; padding: 20px; border-radius: 8px; text-align: left; margin-bottom: 25px; box-shadow: 0 4px 6px rgba(0,0,0,0.02);">
-                    <h4 style="color: #1e3a8a; margin-top: 0; margin-bottom: 15px; border-bottom: 1px solid #bfdbfe; padding-bottom: 10px; text-transform: uppercase; letter-spacing: 1px;">🚌 INFORMACIÓN DE RUTA</h4>
+                    <h4 style="color: #1e3a8a; margin-top: 0; margin-bottom: 15px; border-bottom: 1px solid #bfdbfe; padding-bottom: 10px; text-transform: uppercase; letter-spacing: 1px;">🚌 INFORMACIÓN DE DESPLIEGUE</h4>
                     
-                    <div style="line-height: 1.8; color: #1e3a8a; font-size: 14.5px; margin-bottom: 15px;">
-                      <p style="margin: 0;"><b>Número de Ruta:</b> ${numRuta}</p>
-                      <p style="margin: 0;"><b>Descripción:</b> ${descRuta}</p>
+                    <div style="line-height: 1.8; color: #1e3a8a; font-size: 14.5px;">
+                      <p style="margin: 0; padding-bottom: 5px;"><b>Número de Ruta:</b> ${numRuta}</p>
+                      
+                      <!-- Caja blanca interior para resaltar Fechas y Horas -->
+                      <div style="background: white; border: 1px solid #bfdbfe; border-radius: 6px; padding: 12px; margin: 10px 0; font-size: 14px;">
+                        <p style="margin: 0; color: #1e3a8a; padding-bottom: 6px; border-bottom: 1px solid #eff6ff;">
+                          <b>Salida:</b> &nbsp;📅 ${fechaPartida} &nbsp;|&nbsp; ⏰ ${horaPartida}
+                        </p>
+                        <p style="margin: 6px 0 0 0; color: #1e3a8a;">
+                          <b>Llegada:</b> 📅 ${fechaLlegada} &nbsp;|&nbsp; ⏰ ${horaLlegada}
+                        </p>
+                      </div>
+
+                      <p style="margin: 0; padding-top: 5px; padding-bottom: 5px;"><b>Recorrido de Ruta:</b> ${descRuta}</p>
                       <p style="margin: 0;"><b>Tipo de Movilidad:</b> <span style="background:#dbeafe; padding: 3px 8px; border-radius:4px; font-weight:bold;">${tipoMovilidad}</span></p>
-                    </div>
-
-                    <!-- NUEVO TÍTULO "DESPLIEGUE" -->
-                    <h5 style="color: #1e3a8a; margin: 20px 0 10px 0; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid #bfdbfe; padding-bottom: 5px;">🚀 Despliegue</h5>
-
-                    <div style="display: flex; gap: 10px;">
-                      <div style="flex: 1; background: white; padding: 12px; border-radius: 6px; border: 1px solid #bfdbfe; text-align: center;">
-                        <p style="margin: 0; font-size: 11px; color: #64748b; text-transform: uppercase; letter-spacing: 1px;">Salida</p>
-                        <p style="margin: 5px 0 0 0; font-weight: bold; color: #0f172a; font-size: 14px;">📅 ${fechaPartida}</p>
-                        <p style="margin: 0; color: #0f172a; font-size: 13px;">⏰ ${horaPartida}</p>
-                      </div>
-                      <div style="flex: 1; background: white; padding: 12px; border-radius: 6px; border: 1px solid #bfdbfe; text-align: center;">
-                        <p style="margin: 0; font-size: 11px; color: #64748b; text-transform: uppercase; letter-spacing: 1px;">Llegada</p>
-                        <p style="margin: 5px 0 0 0; font-weight: bold; color: #0f172a; font-size: 14px;">📅 ${fechaLlegada}</p>
-                        <p style="margin: 0; color: #0f172a; font-size: 13px;">⏰ ${horaLlegada}</p>
-                      </div>
                     </div>
                   </div>
 
