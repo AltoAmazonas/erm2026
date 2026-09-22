@@ -5,6 +5,18 @@
   <title>Verificación de Identidad</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
+    /* ================================================= */
+    /* OCULTAR FLECHAS DE SUBIR Y BAJAR EN EL CAMPO DNI  */
+    /* ================================================= */
+    input[type=number]::-webkit-inner-spin-button, 
+    input[type=number]::-webkit-outer-spin-button { 
+      -webkit-appearance: none; 
+      margin: 0; 
+    }
+    input[type=number] {
+      -moz-appearance: textfield; /* Soporte para Firefox */
+    }
+
     /* Estilos institucionales */
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -76,17 +88,16 @@
 
   <div class="tarjeta">
     
-    <h2 class="titulo">SISTEMA DE VERIFICACIÓN</h2>
-    <p class="subtitulo">Módulo de Consulta de Identidad</p>
+    <!-- TEXTOS ACTUALIZADOS -->
+    <h2 class="titulo">Consulta FLV</h2>
+    <p class="subtitulo">Ingrese el número de DNI</p>
     
     <div style="display: flex; flex-direction: column; gap: 15px; margin-bottom: 20px;">
-      <!-- 
-        inputmode="numeric": Abre el teclado de números en celulares
-        maxlength="8": Máximo 8 caracteres
-        oninput: Borra cualquier letra y bloquea en 8 números exactos
-      -->
-      <input type="text" id="dni" class="input-dni" placeholder="Ingrese el DNI" inputmode="numeric" maxlength="8" oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 8);">
-      <button onclick="consultar()" class="btn-consultar">Consultar DNI</button>
+      <!-- CAMPO TIPO NÚMERO (Sin flechas y con límite exacto de 8 dígitos) -->
+      <input type="number" id="dni" class="input-dni" placeholder="Ej: 12345678" oninput="if(this.value.length > 8) this.value = this.value.slice(0, 8);">
+      
+      <!-- BOTÓN ACTUALIZADO -->
+      <button onclick="consultar()" class="btn-consultar">Consultar</button>
     </div>
     
     <div id="resultados"></div>
@@ -107,7 +118,6 @@
       const dniIngresado = document.getElementById("dni").value.trim();
       const resultadosDiv = document.getElementById("resultados");
       
-      // Validar que se hayan escrito exactamente 8 dígitos
       if(dniIngresado.length !== 8) {
         resultadosDiv.innerHTML = "<p style='color:#b71c1c; text-align:center; font-weight:bold; background: #fee2e2; padding: 10px; border-radius: 6px;'>El DNI debe tener exactamente 8 dígitos.</p>";
         return;
