@@ -85,6 +85,34 @@
       return llave && fila[llave] !== null && fila[llave] !== "" ? fila[llave] : "No registrado";
     }
 
+    // NUEVA FUNCIÓN: Convierte MM/DD/YYYY a DD/MM/YYYY
+    function formatearFecha(fechaStr) {
+      if (!fechaStr || fechaStr === "No registrado") return fechaStr;
+      
+      let fechaString = String(fechaStr).trim();
+      
+      // Si la fecha viene separada por "/" (formato de SheetDB: M/D/YYYY)
+      let partes = fechaString.split("/");
+      if (partes.length === 3) {
+        let mes = partes[0].padStart(2, '0');
+        let dia = partes[1].padStart(2, '0');
+        let anio = partes[2].substring(0, 4); // Aseguramos que solo tome el año
+        return `${dia}/${mes}/${anio}`;
+      }
+      
+      // Si por alguna razón viene separada por "-" (YYYY-MM-DD)
+      partes = fechaString.split("-");
+      if (partes.length === 3) {
+        let anio = partes[0];
+        let mes = partes[1].padStart(2, '0');
+        let dia = partes[2].substring(0, 2);
+        return `${dia}/${mes}/${anio}`;
+      }
+
+      // Si no es un formato reconocible, se devuelve tal cual
+      return fechaStr;
+    }
+
     function consultar() {
       const dniIngresado = document.getElementById("dni").value.trim();
       const resultadosDiv = document.getElementById("resultados");
@@ -95,7 +123,6 @@
         return;
       }
 
-      // Mensaje de carga limpio
       resultadosDiv.innerHTML = "<p style='text-align:center; color: #475569; font-weight:bold;'>Verificando Identidad...</p>";
 
       // ==============================================================
@@ -122,7 +149,6 @@
           }
 
           if (!personaEncontrada) {
-            // NUEVA PANTALLA DE ERROR CON WHATSAPP
             pantallaBusqueda.style.display = "none";
             let msjAyuda = `Hola, mi DNI ${dniIngresado} no aparece en el sistema de consulta FLV.`;
             let urlWaAyuda = `https://wa.me/51991260103?text=${encodeURIComponent(msjAyuda)}`;
@@ -130,10 +156,10 @@
             resultadosDiv.innerHTML = `
               <div style='background: #fffbeb; border: 1px solid #fef08a; padding: 25px 20px; border-radius: 8px; text-align: center; margin-top: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); animation: fadeIn 0.5s ease-in;'>
                 <h4 style='margin-top:0; color: #ca8a04; font-size: 18px;'>❌ DNI NO ENCONTRADO</h4>
-                <p style='color: #854d0e; font-size: 15px; margin-bottom: 20px;'><b>Comunicarse con el área de Fiscalización</b></p>
+                <p style='color: #854d0e; font-size: 15px; margin-bottom: 20px;'><b>Comunicarse con el área de Fiscalización.</b></p>
                 
                 <a href="${urlWaAyuda}" target="_blank" style="display: inline-flex; align-items: center; justify-content: center; width: 100%; box-sizing: border-box; background: #25D366; color: white; padding: 14px 15px; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 16px; transition: background 0.3s;">
-                  💬 WhatsApp
+                  💬 WhatsApp (991 260 103)
                 </a>
 
                 <button onclick="location.reload()" class="btn-volver" style="margin-top: 20px;">Realizar otra consulta</button>
@@ -142,7 +168,6 @@
           }
 
           pantallaBusqueda.style.display = "none";
-          // Segundo mensaje de carga limpio
           resultadosDiv.innerHTML = "<p style='text-align:center; color: #475569; font-weight:bold;'>Cargando datos...</p>";
 
           let idLocalSipe = obtenerDato(personaEncontrada, "ID LOCAL");
@@ -193,9 +218,11 @@
                 const numRuta = obtenerDato(infoRuta, "numero de ruta");
                 const descRuta = obtenerDato(infoRuta, "descripcion de ruta"); 
                 const tipoMovilidad = obtenerDato(infoRuta, "tipo de movilidad");
-                const fechaPartida = obtenerDato(infoRuta, "fecha de partida");
+                
+                // APLICAMOS LA FUNCIÓN DE FORMATO DE FECHA AQUÍ
+                const fechaPartida = formatearFecha(obtenerDato(infoRuta, "fecha de partida"));
                 const horaPartida = obtenerDato(infoRuta, "hora de partida");
-                const fechaLlegada = obtenerDato(infoRuta, "fecha de llegada");
+                const fechaLlegada = formatearFecha(obtenerDato(infoRuta, "fecha de llegada"));
                 const horaLlegada = obtenerDato(infoRuta, "hora de llegada");
 
                 htmlBloqueInferior = `
