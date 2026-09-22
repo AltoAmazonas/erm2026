@@ -95,7 +95,8 @@
         return;
       }
 
-      resultadosDiv.innerHTML = "<p style='text-align:center; color: #475569; font-weight:bold;'>Verificando Identidad (Hoja SIPE)...</p>";
+      // Mensaje de carga limpio
+      resultadosDiv.innerHTML = "<p style='text-align:center; color: #475569; font-weight:bold;'>Verificando Identidad...</p>";
 
       // ==============================================================
       // ¡NO OLVIDES PONER TU ENLACE BASE DE SHEETDB AQUÍ ABAJO!
@@ -121,16 +122,28 @@
           }
 
           if (!personaEncontrada) {
+            // NUEVA PANTALLA DE ERROR CON WHATSAPP
+            pantallaBusqueda.style.display = "none";
+            let msjAyuda = `Hola, mi DNI ${dniIngresado} no aparece en el sistema de consulta FLV. Solicito asistencia.`;
+            let urlWaAyuda = `https://wa.me/51991260103?text=${encodeURIComponent(msjAyuda)}`;
+
             resultadosDiv.innerHTML = `
-              <div style='background: #fef2f2; border: 1px solid #fecaca; padding: 15px; border-radius: 8px; text-align: center; margin-top: 15px;'>
-                <h4 style='margin-top:0; color: #991b1b;'>❌ Sin resultados</h4>
-                <p style='color: #7f1d1d; font-size: 14px; margin-bottom: 0;'>El DNI <b>${dniIngresado}</b> no registra información.</p>
+              <div style='background: #fffbeb; border: 1px solid #fef08a; padding: 25px 20px; border-radius: 8px; text-align: center; margin-top: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); animation: fadeIn 0.5s ease-in;'>
+                <h4 style='margin-top:0; color: #ca8a04; font-size: 18px;'>❌ Sin resultados</h4>
+                <p style='color: #854d0e; font-size: 15px; margin-bottom: 20px;'><b>Comunicarse con:</b></p>
+                
+                <a href="${urlWaAyuda}" target="_blank" style="display: inline-flex; align-items: center; justify-content: center; width: 100%; box-sizing: border-box; background: #25D366; color: white; padding: 14px 15px; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 16px; transition: background 0.3s;">
+                  💬 WhatsApp (991 260 103)
+                </a>
+
+                <button onclick="location.reload()" class="btn-volver" style="margin-top: 20px;">Realizar otra consulta</button>
               </div>`;
             return; 
           }
 
           pantallaBusqueda.style.display = "none";
-          resultadosDiv.innerHTML = "<p style='text-align:center; color: #475569; font-weight:bold;'>Extrayendo información de despliegue...</p>";
+          // Segundo mensaje de carga limpio
+          resultadosDiv.innerHTML = "<p style='text-align:center; color: #475569; font-weight:bold;'>Cargando datos...</p>";
 
           let idLocalSipe = obtenerDato(personaEncontrada, "ID LOCAL");
           const nombre = obtenerDato(personaEncontrada, "nombre completo");
@@ -174,11 +187,9 @@
                 htmlCentroPoblado = `<p style="margin: 0; padding-bottom: 3px;"><b>Centro Poblado:</b> ${centroPoblado}</p>`;
               }
 
-              // LÓGICA DE CONDICIÓN (Responsable vs No Responsable)
               let htmlBloqueInferior = "";
 
               if (esRespBool) {
-                // SI ES RESPONSABLE -> Mostrar Ruta
                 const numRuta = obtenerDato(infoRuta, "numero de ruta");
                 const descRuta = obtenerDato(infoRuta, "descripcion de ruta"); 
                 const tipoMovilidad = obtenerDato(infoRuta, "tipo de movilidad");
@@ -209,7 +220,6 @@
                   </div>
                 `;
               } else {
-                // SI NO ES RESPONSABLE -> Buscar al responsable y crear WhatsApp
                 let responsableNombre = "No asignado en la base de datos";
                 let responsableCelular = "";
                 
@@ -217,7 +227,6 @@
                     if(obtenerDato(datosSipe[k], "ID LOCAL") == idLocalSipe && 
                       (obtenerDato(datosSipe[k], "es responsable").toUpperCase() === "SI" || obtenerDato(datosSipe[k], "es responsable").toUpperCase() === "SÍ")){
                         responsableNombre = obtenerDato(datosSipe[k], "nombre completo");
-                        // Dejar solo los números para el link de WhatsApp
                         responsableCelular = String(obtenerDato(datosSipe[k], "celular")).replace(/[^0-9]/g, "");
                         break;
                     }
@@ -225,7 +234,6 @@
 
                 let btnWhatsapp = "";
                 if(responsableCelular !== "" && responsableCelular !== "No registrado"){
-                    // Mensaje predeterminado inteligente
                     let mensaje = `Hola ${responsableNombre}, soy ${nombre}, apoyo FLV asignado al local de votación ${localVotacion}.`;
                     let urlWa = `https://wa.me/51${responsableCelular}?text=${encodeURIComponent(mensaje)}`;
                     
@@ -251,7 +259,6 @@
                 `;
               }
 
-              // ARMADO FINAL DE LA PANTALLA
               resultadosDiv.innerHTML = `
                 <div style="text-align: center; animation: fadeIn 0.6s ease-in;">
                   
@@ -276,7 +283,6 @@
                     </div>
                   </div>
 
-                  <!-- MUESTRA RUTAS (Si es resp) O MENSAJE Y WHATSAPP (Si es apoyo) -->
                   ${htmlBloqueInferior}
 
                   <button onclick="location.reload()" class="btn-volver">Realizar otra consulta</button>
@@ -285,7 +291,7 @@
               `;
             })
             .catch(error => {
-              resultadosDiv.innerHTML = "<p style='color:#b71c1c; text-align:center;'>Error conectando con la pestaña DATOS.</p>";
+              resultadosDiv.innerHTML = "<p style='color:#b71c1c; text-align:center;'>Error conectando con los datos de despliegue.</p>";
             });
         })
         .catch(error => {
