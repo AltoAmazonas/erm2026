@@ -12,13 +12,13 @@
 
     body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f6f9; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 10px; box-sizing: border-box; }
     
-    .tarjeta { background: white; padding: 20px 30px 30px 30px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.15); max-width: 450px; width: 100%; border-top: 6px solid #b71c1c; transition: max-width 0.5s ease; }
+    .tarjeta { background: white; padding: 20px 30px 30px 30px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.15); max-width: 450px; width: 100%; border-top: 6px solid #b71c1c; transition: max-width 0.4s ease-in-out; }
     
     .titulo { text-align: center; color: #2c3e50; margin-top: 0; font-weight: 700; letter-spacing: 0.5px; }
     .subtitulo { text-align: center; color: #666; font-size: 14px; margin-bottom: 25px; }
     .input-dni { padding: 14px; font-size: 18px; border: 2px solid #cbd5e1; border-radius: 6px; text-align: center; outline: none; font-weight: bold; letter-spacing: 2px; color: #333; transition: border-color 0.3s; }
     .input-dni:focus { border-color: #b71c1c; }
-    .btn-consultar { padding: 15px; font-size: 16px; background: #b71c1c; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; transition: background 0.3s; }
+    .btn-consultar { padding: 15px; font-size: 16px; background: #b71c1c; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; transition: background 0.3s; width: 100%; }
     .btn-consultar:hover { background: #901616; }
     .btn-volver { margin-top: 20px; padding: 12px; width: 100%; font-size: 14px; background: white; color: #b71c1c; border: 2px solid #b71c1c; border-radius: 6px; cursor: pointer; font-weight: bold; transition: all 0.3s; display: block; text-transform: uppercase; }
     .btn-volver:hover { background: #fef2f2; }
@@ -33,26 +33,89 @@
     .admin-table td { border-bottom: 1px solid #e2e8f0; padding: 10px 12px; color: #334155; }
     .admin-table tr:hover { background: #f8fafc; }
     
+    .link-dni { color: #b71c1c; font-weight: bold; text-decoration: none; border-bottom: 1px dashed #b71c1c; cursor: pointer; transition: color 0.3s; }
+    .link-dni:hover { color: #1e293b; border-bottom: 1px solid #1e293b; }
+
     @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
   </style>
 </head>
 <body>
 
   <div class="tarjeta" id="tarjeta-principal">
+    
+    <!-- PANTALLA 1: BUSCADOR -->
     <div id="pantalla-busqueda">
       <h2 class="titulo">Consulta FLV</h2>
       <p class="subtitulo">Ingrese el número de DNI</p>
       <div style="display: flex; flex-direction: column; gap: 15px; margin-bottom: 20px;">
         <input type="number" id="dni" class="input-dni" placeholder="Ej: 12345678" oninput="if(this.value.length > 8) this.value = this.value.slice(0, 8);">
-        <button onclick="consultar()" class="btn-consultar">Consultar</button>
+        <button onclick="iniciarConsulta()" class="btn-consultar">Consultar</button>
       </div>
     </div>
-    <div id="resultados"></div>
+
+    <!-- MENSAJE DE CARGA -->
+    <div id="mensaje-carga" style="display:none; text-align:center; padding: 20px; animation: fadeIn 0.3s ease-in;">
+      <p style="color: #475569; font-weight:bold; font-size: 16px;">⏳ Verificando Base de Datos...</p>
+    </div>
+
+    <!-- PANTALLA ERROR DNI NO ENCONTRADO -->
+    <div id="panel-error" style="display:none; animation: fadeIn 0.5s ease-in;"></div>
+
+    <!-- PANTALLA 2: DETALLE DEL FLV -->
+    <div id="panel-detalle" style="display:none; animation: fadeIn 0.5s ease-in;"></div>
+
+    <!-- PANTALLA 3: PANEL MAESTRO -->
+    <div id="panel-maestro" style="display:none; animation: fadeIn 0.6s ease-in;">
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #e2e8f0; padding-bottom: 15px; margin-bottom: 20px;">
+        <div>
+          <h2 style="color: #1e293b; margin: 0; font-size: 24px;">🛡️ Panel Maestro FLV</h2>
+          <p id="conteo-resultados" style="color: #64748b; margin: 5px 0 0 0; font-size: 14px;">Cargando base de datos...</p>
+        </div>
+        <button onclick="location.reload()" style="background: #f1f5f9; color: #334155; border: 1px solid #cbd5e1; padding: 8px 15px; border-radius: 6px; cursor: pointer; font-weight: bold;">Salir</button>
+      </div>
+
+      <div class="admin-controls">
+        <input type="text" id="filtro-texto" class="admin-input" placeholder="🔍 Buscar DNI o Nombre..." onkeyup="filtrarTablaAdmin()">
+        <select id="filtro-tipo" class="admin-select" onchange="filtrarTablaAdmin()">
+          <option value="ALL">Todos los Tipos</option>
+          <option value="URBANO">Urbano</option>
+          <option value="INTERMEDIO">Intermedio</option>
+          <option value="LEJANO">Lejano</option>
+          <option value="ESPECIAL">Especial</option>
+        </select>
+        <select id="filtro-rol" class="admin-select" onchange="filtrarTablaAdmin()">
+          <option value="ALL">Todos los Roles</option>
+          <option value="RESPONSABLE">Responsables</option>
+          <option value="APOYO">Apoyos</option>
+        </select>
+      </div>
+
+      <div class="table-container">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>DNI</th>
+              <th>Nombre Completo</th>
+              <th>Celular</th>
+              <th>Tipo</th>
+              <th>Distrito</th>
+              <th>Local de Votación</th>
+              <th>Rol</th>
+            </tr>
+          </thead>
+          <tbody id="admin-tbody"></tbody>
+        </table>
+      </div>
+      <p style="text-align:center; margin-top: 20px; font-size: 13px; color: #94a3b8; font-weight: 500; letter-spacing: 0.5px;">Designed by Reynaldo</p>
+    </div>
+
   </div>
 
   <script>
-    // VARIABLE GLOBAL PARA EL PANEL MAESTRO
+    // Variables Globales para optimizar velocidad
     let baseDatosSipe = [];
+    let baseDatosRutas = [];
+    const DNI_MAESTRO = "99999999";
 
     function normalizar(texto) {
       if(!texto) return "";
@@ -62,7 +125,7 @@
     function obtenerDato(fila, nombreColumnaBuscada) {
       if(!fila) return "No registrado";
       const llave = Object.keys(fila).find(k => normalizar(k) === normalizar(nombreColumnaBuscada));
-      return llave && fila[llave] !== null && fila[llave] !== "" ? fila[llave] : "No registrado";
+      return llave && fila[llave] !== null && fila[llave] !== "" ? String(fila[llave]).trim() : "No registrado";
     }
 
     function formatearFecha(fechaStr) {
@@ -70,292 +133,238 @@
       let fechaString = String(fechaStr).trim();
       let partes = fechaString.split("/");
       if (partes.length === 3) {
-        let mes = partes[0].padStart(2, '0');
-        let dia = partes[1].padStart(2, '0');
-        let anio = partes[2].substring(0, 4);
+        let mes = partes[0].padStart(2, '0'); let dia = partes[1].padStart(2, '0'); let anio = partes[2].substring(0, 4);
         return `${dia}/${mes}/${anio}`;
       }
       partes = fechaString.split("-");
       if (partes.length === 3) {
-        let anio = partes[0];
-        let mes = partes[1].padStart(2, '0');
-        let dia = partes[2].substring(0, 2);
+        let anio = partes[0]; let mes = partes[1].padStart(2, '0'); let dia = partes[2].substring(0, 2);
         return `${dia}/${mes}/${anio}`;
       }
       return fechaStr;
     }
 
-    function consultar() {
+    // FLUJO PRINCIPAL DE CONSULTA
+    function iniciarConsulta() {
       const dniIngresado = document.getElementById("dni").value.trim();
-      const resultadosDiv = document.getElementById("resultados");
-      const pantallaBusqueda = document.getElementById("pantalla-busqueda");
-      const tarjeta = document.getElementById("tarjeta-principal");
-      
-      // =========================================================
-      // DNI MAESTRO PARA ABRIR EL PANEL DE CONTROL
-      const DNI_MAESTRO = "99999999"; 
-      // =========================================================
-
       if(dniIngresado.length !== 8) {
-        resultadosDiv.innerHTML = "<p style='color:#b71c1c; text-align:center; font-weight:bold; background: #fee2e2; padding: 10px; border-radius: 6px;'>El DNI debe tener exactamente 8 dígitos.</p>";
+        alert("El DNI debe tener exactamente 8 dígitos.");
         return;
       }
 
-      resultadosDiv.innerHTML = "<p style='text-align:center; color: #475569; font-weight:bold;'>Verificando Identidad...</p>";
+      document.getElementById("pantalla-busqueda").style.display = "none";
+      document.getElementById("mensaje-carga").style.display = "block";
 
-      const url_SIPE = "sipe.csv";
-      const url_DATOS = "datos.csv";
+      // 1. Descargamos SIPE
+      Papa.parse("sipe.csv", {
+        download: true, header: true, skipEmptyLines: true,
+        complete: function(resSipe) {
+          baseDatosSipe = resSipe.data;
 
-      Papa.parse(url_SIPE, {
-        download: true,
-        header: true,
-        skipEmptyLines: true,
-        complete: function(resultadosSipe) {
-          const datosSipe = resultadosSipe.data;
-          
-          // ---- LÓGICA DEL PANEL MAESTRO ----
-          if (dniIngresado === DNI_MAESTRO) {
-            baseDatosSipe = datosSipe; // Guardamos los datos para filtrar
-            pantallaBusqueda.style.display = "none";
-            tarjeta.style.maxWidth = "1100px"; // Expandimos la tarjeta
-            
-            mostrarPanelMaestro();
-            return;
-          }
-          // ----------------------------------
+          // 2. Descargamos DATOS (para tener todo listo, ya sea maestro o normal)
+          Papa.parse("datos.csv", {
+            download: true, header: true, skipEmptyLines: true,
+            complete: function(resDatos) {
+              baseDatosRutas = resDatos.data;
+              document.getElementById("mensaje-carga").style.display = "none";
 
-          let personaEncontrada = null;
-          for (let i = 0; i < datosSipe.length; i++) {
-            let dniFila = obtenerDato(datosSipe[i], "DNI"); 
-            if (String(dniFila).trim() === String(dniIngresado).trim()) {
-              personaEncontrada = datosSipe[i];
-              break; 
-            }
-          }
-
-          if (!personaEncontrada) {
-            pantallaBusqueda.style.display = "none";
-            let msjAyuda = `Hola, mi DNI ${dniIngresado} no aparece en el sistema de consulta FLV. Solicito asistencia.`;
-            let urlWaAyuda = `https://wa.me/51991260103?text=${encodeURIComponent(msjAyuda)}`;
-
-            resultadosDiv.innerHTML = `
-              <div style='background: #fffbeb; border: 1px solid #fef08a; padding: 25px 20px; border-radius: 8px; text-align: center; margin-top: 5px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); animation: fadeIn 0.5s ease-in;'>
-                <h4 style='margin-top:0; margin-bottom: 20px; color: #ca8a04; font-size: 18px;'>❌ DNI NO ENCONTRADO</h4>
-                
-                <a href="${urlWaAyuda}" target="_blank" style="display: inline-flex; align-items: center; justify-content: center; width: 100%; box-sizing: border-box; background: #25D366; color: white; padding: 14px 15px; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 15px; transition: background 0.3s;">
-                  💬 Escribe aquí para mayor información
-                </a>
-                <button onclick="location.reload()" class="btn-volver" style="margin-top: 20px;">Realizar otra consulta</button>
-                
-                <p style="margin-top: 20px; margin-bottom: 0; font-size: 13px; color: #94a3b8; font-weight: 500; letter-spacing: 0.5px;">Designed by Reynaldo</p>
-              </div>`;
-            return; 
-          }
-
-          pantallaBusqueda.style.display = "none";
-          resultadosDiv.innerHTML = "<p style='text-align:center; color: #475569; font-weight:bold;'>Cargando datos de despliegue...</p>";
-
-          let idLocalSipe = obtenerDato(personaEncontrada, "ID LOCAL");
-          const nombre = obtenerDato(personaEncontrada, "nombre completo");
-          const celular = obtenerDato(personaEncontrada, "celular");
-          
-          const esResponsable = obtenerDato(personaEncontrada, "es responsable").toUpperCase();
-          let esRespBool = (esResponsable === "SI" || esResponsable === "SÍ");
-          let badgeResponsable = esRespBool 
-            ? `<span style="background: #fef08a; color: #854d0e; padding: 5px 12px; border-radius: 6px; font-size: 12px; font-weight: bold; display: inline-block; margin-top: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">⭐ SÍ ES RESPONSABLE DE LOCAL DE VOTACIÓN</span>`
-            : `<span style="background: #e2e8f0; color: #475569; padding: 5px 12px; border-radius: 6px; font-size: 12px; font-weight: bold; display: inline-block; margin-top: 8px;">NO ES RESPONSABLE DE LOCAL DE VOTACIÓN</span>`;
-
-          const tipoAsignacion = obtenerDato(personaEncontrada, "tipo asignacion");
-          let badgeTipo = "";
-          if (tipoAsignacion !== "No registrado" && tipoAsignacion.trim() !== "") {
-            badgeTipo = `<span style="background: #2563eb; color: white; padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: bold; letter-spacing: 0.5px; box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);">${tipoAsignacion}</span>`;
-          }
-
-          Papa.parse(url_DATOS, {
-            download: true,
-            header: true,
-            skipEmptyLines: true,
-            complete: function(resultadosDatos) {
-              const datosRuta = resultadosDatos.data;
-              
-              let infoRuta = null;
-              for (let j = 0; j < datosRuta.length; j++) {
-                let codigoLV = obtenerDato(datosRuta[j], "CODIGO DE LV");
-                if (codigoLV !== "No registrado" && codigoLV == idLocalSipe) {
-                  infoRuta = datosRuta[j];
-                  break;
-                }
-              }
-              
-              const departamento = obtenerDato(personaEncontrada, "departamento");
-              const provincia = obtenerDato(personaEncontrada, "provincia");
-              const distrito = obtenerDato(personaEncontrada, "distrito");
-              const localVotacion = obtenerDato(personaEncontrada, "local de votacion");
-              const centroPoblado = obtenerDato(infoRuta, "centro poblado");
-              let direccion = obtenerDato(infoRuta, "direccion del local de votacion");
-              if(direccion === "No registrado") direccion = obtenerDato(infoRuta, "direccion");
-
-              let htmlCentroPoblado = (centroPoblado !== "No registrado" && centroPoblado.trim() !== "") 
-                ? `<p style="margin: 0; padding-bottom: 3px;"><b>Centro Poblado:</b> ${centroPoblado}</p>` : "";
-
-              let htmlBloqueInferior = "";
-
-              if (esRespBool) {
-                const numRuta = obtenerDato(infoRuta, "numero de ruta");
-                const descRuta = obtenerDato(infoRuta, "descripcion de ruta"); 
-                const tipoMovilidad = obtenerDato(infoRuta, "tipo de movilidad");
-                const fechaPartida = formatearFecha(obtenerDato(infoRuta, "fecha de salida"));
-                const horaPartida = obtenerDato(infoRuta, "hora de salida");
-                const fechaLlegada = formatearFecha(obtenerDato(infoRuta, "fecha de llegada"));
-                const horaLlegada = obtenerDato(infoRuta, "hora de llegada");
-
-                htmlBloqueInferior = `
-                  <div style="background: #eff6ff; border: 1px solid #bfdbfe; border-left: 5px solid #1e3a8a; padding: 20px; border-radius: 8px; text-align: left; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.02);">
-                    <h4 style="color: #1e3a8a; margin-top: 0; margin-bottom: 15px; border-bottom: 1px solid #bfdbfe; padding-bottom: 10px; text-transform: uppercase; letter-spacing: 1px;">🚌 INFORMACIÓN DE DESPLIEGUE</h4>
-                    <div style="line-height: 1.8; color: #1e3a8a; font-size: 14.5px;">
-                      <p style="margin: 0; padding-bottom: 5px;"><b>Número de Ruta:</b> ${numRuta}</p>
-                      <div style="background: white; border: 1px solid #bfdbfe; border-radius: 6px; padding: 12px; margin: 10px 0; font-size: 14px;">
-                        <p style="margin: 0; color: #1e3a8a; padding-bottom: 6px; border-bottom: 1px solid #eff6ff;">
-                          <b>Salida:</b> &nbsp;📅 ${fechaPartida} &nbsp;|&nbsp; ⏰ ${horaPartida}
-                        </p>
-                        <p style="margin: 6px 0 0 0; color: #1e3a8a;">
-                          <b>Llegada:</b> 📅 ${fechaLlegada} &nbsp;|&nbsp; ⏰ ${horaLlegada}
-                        </p>
-                      </div>
-                      <p style="margin: 0; padding-top: 5px; padding-bottom: 5px;"><b>Recorrido de Ruta:</b> ${descRuta}</p>
-                      <p style="margin: 0;"><b>Tipo de Movilidad:</b> <span style="background:#dbeafe; padding: 3px 8px; border-radius:4px; font-weight:bold;">${tipoMovilidad}</span></p>
-                    </div>
-                  </div>`;
+              if (dniIngresado === DNI_MAESTRO) {
+                mostrarPanelMaestro();
               } else {
-                let responsableNombre = "No asignado en la base de datos";
-                let responsableCelular = "";
-                for(let k = 0; k < datosSipe.length; k++){
-                    if(obtenerDato(datosSipe[k], "ID LOCAL") == idLocalSipe && 
-                      (obtenerDato(datosSipe[k], "es responsable").toUpperCase() === "SI" || obtenerDato(datosSipe[k], "es responsable").toUpperCase() === "SÍ")){
-                        responsableNombre = obtenerDato(datosSipe[k], "nombre completo");
-                        responsableCelular = String(obtenerDato(datosSipe[k], "celular")).replace(/[^0-9]/g, "");
-                        break;
-                    }
-                }
-
-                let btnWhatsapp = "";
-                if(responsableCelular !== "" && responsableCelular !== "No registrado"){
-                    let mensaje = `Hola ${responsableNombre}, soy ${nombre}, apoyo FLV asignado al local de votación ${localVotacion}.`;
-                    let urlWa = `https://wa.me/51${responsableCelular}?text=${encodeURIComponent(mensaje)}`;
-                    btnWhatsapp = `
-                      <a href="${urlWa}" target="_blank" style="display: inline-flex; align-items: center; justify-content: center; width: 100%; box-sizing: border-box; margin-top: 15px; background: #25D366; color: white; padding: 12px 15px; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 15px; transition: background 0.3s;">
-                        💬 Escribir al WhatsApp
-                      </a>`;
-                }
-
-                htmlBloqueInferior = `
-                  <div style="background: #fffbeb; border: 1px solid #fef08a; border-left: 5px solid #ca8a04; padding: 20px; border-radius: 8px; text-align: left; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.02);">
-                    <h4 style="color: #ca8a04; margin-top: 0; margin-bottom: 10px; border-bottom: 1px solid #fef08a; padding-bottom: 10px; text-transform: uppercase; letter-spacing: 1px;">⚠️ ATENCIÓN</h4>
-                    <p style="color: #854d0e; font-size: 14.5px; margin: 0 0 15px 0;">Comunicarse con su responsable de local de votación para coordinar los detalles del despliegue.</p>
-                    <div style="background: white; border: 1px solid #fef08a; padding: 12px; border-radius: 6px;">
-                      <p style="margin: 0; color: #422006; font-size: 13px; text-transform: uppercase; font-weight: bold; letter-spacing: 0.5px;">Responsable Asignado:</p>
-                      <p style="margin: 4px 0 0 0; color: #854d0e; font-size: 16px; font-weight: bold;">${responsableNombre}</p>
-                    </div>
-                    ${btnWhatsapp}
-                  </div>`;
+                procesarUsuarioNormal(dniIngresado);
               }
-
-              resultadosDiv.innerHTML = `
-                <div style="text-align: center; margin-top: -10px; animation: fadeIn 0.6s ease-in;">
-                  <h2 style="color: #b71c1c; margin-bottom: 5px; font-size: 24px;">Bienvenido FLV</h2>
-                  <div style="margin-bottom: 15px;">
-                    <h3 style="color: #1e293b; margin-top: 0; margin-bottom: 0; font-size: 20px;">${nombre}</h3>
-                    ${badgeResponsable}
-                  </div>
-                  <p style="color: #64748b; font-size: 15px; margin-top: 0; margin-bottom: 20px; letter-spacing: 1px; font-weight: bold;">
-                    DNI: ${dniIngresado} &nbsp;|&nbsp; 📱 ${celular}
-                  </p>
-                  
-                  <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-left: 5px solid #166534; padding: 20px; border-radius: 8px; text-align: left; margin-bottom: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.02);">
-                    <h4 style="color: #166534; margin-top: 0; margin-bottom: 15px; border-bottom: 1px solid #bbf7d0; padding-bottom: 10px; text-transform: uppercase; letter-spacing: 1px; display: flex; align-items: center; gap: 10px;">
-                      📍 LUGAR ASIGNADO 
-                      ${badgeTipo}
-                    </h4>
-                    <div style="line-height: 1.8; color: #166534; font-size: 14.5px;">
-                      <p style="margin: 0; padding-bottom: 3px;"><b>Departamento:</b> ${departamento}</p>
-                      <p style="margin: 0; padding-bottom: 3px;"><b>Provincia:</b> ${provincia}</p>
-                      <p style="margin: 0; padding-bottom: 3px;"><b>Distrito:</b> ${distrito}</p>
-                      ${htmlCentroPoblado}
-                      <p style="margin: 0; padding-bottom: 3px;"><b>Local de Votación:</b> ${localVotacion}</p>
-                      <p style="margin: 0;"><b>Dirección:</b> ${direccion}</p>
-                    </div>
-                  </div>
-                  
-                  ${htmlBloqueInferior}
-                  <button onclick="location.reload()" class="btn-volver" style="margin-top: 10px;">Realizar otra consulta</button>
-                  <p style="margin-top: 15px; margin-bottom: 0; font-size: 13px; color: #94a3b8; font-weight: 500; letter-spacing: 0.5px;">Designed by Reynaldo</p>
-                </div>
-              `;
-            }
+            },
+            error: function() { alert("Error cargando datos.csv"); }
           });
-        }
+        },
+        error: function() { alert("Error cargando sipe.csv"); }
       });
     }
 
-    // =========================================================
-    // FUNCIONES DEL PANEL MAESTRO (ADMINISTRADOR)
-    // =========================================================
-    function mostrarPanelMaestro() {
-      const resultadosDiv = document.getElementById("resultados");
+    function procesarUsuarioNormal(dni) {
+      const persona = baseDatosSipe.find(f => obtenerDato(f, "DNI") === dni);
       
-      resultadosDiv.innerHTML = `
-        <div style="animation: fadeIn 0.6s ease-in;">
-          <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #e2e8f0; padding-bottom: 15px; margin-bottom: 20px;">
-            <div>
-              <h2 style="color: #1e293b; margin: 0; font-size: 24px;">🛡️ Panel Maestro FLV</h2>
-              <p id="conteo-resultados" style="color: #64748b; margin: 5px 0 0 0; font-size: 14px;">Cargando base de datos...</p>
-            </div>
-            <button onclick="location.reload()" style="background: #f1f5f9; color: #334155; border: 1px solid #cbd5e1; padding: 8px 15px; border-radius: 6px; cursor: pointer; font-weight: bold;">Salir</button>
-          </div>
-
-          <div class="admin-controls">
-            <input type="text" id="filtro-texto" class="admin-input" placeholder="🔍 Buscar DNI o Nombre..." onkeyup="filtrarTablaAdmin()">
-            
-            <select id="filtro-tipo" class="admin-select" onchange="filtrarTablaAdmin()">
-              <option value="ALL">Todos los Tipos</option>
-              <option value="URBANO">Urbano</option>
-              <option value="INTERMEDIO">Intermedio</option>
-              <option value="LEJANO">Lejano</option>
-              <option value="ESPECIAL">Especial</option>
-            </select>
-            
-            <select id="filtro-rol" class="admin-select" onchange="filtrarTablaAdmin()">
-              <option value="ALL">Todos los Roles</option>
-              <option value="RESPONSABLE">Responsables</option>
-              <option value="APOYO">Apoyos</option>
-            </select>
-          </div>
-
-          <div class="table-container">
-            <table class="admin-table">
-              <thead>
-                <tr>
-                  <th>DNI</th>
-                  <th>Nombre Completo</th>
-                  <th>Celular</th>
-                  <th>Tipo</th>
-                  <th>Distrito</th>
-                  <th>Local de Votación</th>
-                  <th>Rol</th>
-                </tr>
-              </thead>
-              <tbody id="admin-tbody">
-              </tbody>
-            </table>
-          </div>
-          
-          <p style="text-align:center; margin-top: 20px; font-size: 13px; color: #94a3b8; font-weight: 500; letter-spacing: 0.5px;">Designed by Reynaldo</p>
-        </div>
-      `;
-
-      filtrarTablaAdmin(); // Carga inicial
+      if (!persona) {
+        const urlWaAyuda = `https://wa.me/51991260103?text=${encodeURIComponent("Hola, mi DNI " + dni + " no aparece en el sistema de consulta FLV. Solicito asistencia.")}`;
+        const panelError = document.getElementById("panel-error");
+        panelError.innerHTML = `
+          <div style='background: #fffbeb; border: 1px solid #fef08a; padding: 25px 20px; border-radius: 8px; text-align: center; margin-top: 5px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);'>
+            <h4 style='margin-top:0; margin-bottom: 20px; color: #ca8a04; font-size: 18px;'>❌ DNI NO ENCONTRADO</h4>
+            <a href="${urlWaAyuda}" target="_blank" style="display: inline-flex; align-items: center; justify-content: center; width: 100%; box-sizing: border-box; background: #25D366; color: white; padding: 14px 15px; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 15px; transition: background 0.3s;">
+              💬 Escribe aquí para mayor información
+            </a>
+            <button onclick="location.reload()" class="btn-volver" style="margin-top: 20px;">Realizar otra consulta</button>
+            <p style="margin-top: 20px; margin-bottom: 0; font-size: 13px; color: #94a3b8; font-weight: 500; letter-spacing: 0.5px;">Designed by Reynaldo</p>
+          </div>`;
+        panelError.style.display = "block";
+        return;
+      }
+      
+      renderizarTarjetaDetalle(persona, false);
     }
 
+    function mostrarPanelMaestro() {
+      document.getElementById("tarjeta-principal").style.maxWidth = "1100px";
+      document.getElementById("panel-detalle").style.display = "none";
+      document.getElementById("panel-maestro").style.display = "block";
+      filtrarTablaAdmin();
+    }
+
+    function volverAlPanelMaestro() {
+      document.getElementById("panel-detalle").style.display = "none";
+      document.getElementById("tarjeta-principal").style.maxWidth = "1100px";
+      
+      // Pequeño retardo para que la tarjeta se expanda antes de mostrar el panel
+      setTimeout(() => {
+        document.getElementById("panel-maestro").style.display = "block";
+      }, 150);
+    }
+
+    // GENERADOR DE LA TARJETA VISUAL
+    function renderizarTarjetaDetalle(personaEncontrada, esModoMaestro) {
+      document.getElementById("panel-maestro").style.display = "none";
+      
+      // Encogemos la tarjeta para que se vea bonita
+      document.getElementById("tarjeta-principal").style.maxWidth = "450px";
+      const panelDetalle = document.getElementById("panel-detalle");
+
+      let idLocalSipe = obtenerDato(personaEncontrada, "ID LOCAL");
+      const dni = obtenerDato(personaEncontrada, "DNI");
+      const nombre = obtenerDato(personaEncontrada, "nombre completo");
+      const celular = obtenerDato(personaEncontrada, "celular");
+      
+      const esResponsable = obtenerDato(personaEncontrada, "es responsable").toUpperCase();
+      let esRespBool = (esResponsable === "SI" || esResponsable === "SÍ");
+      let badgeResponsable = esRespBool 
+        ? `<span style="background: #fef08a; color: #854d0e; padding: 5px 12px; border-radius: 6px; font-size: 12px; font-weight: bold; display: inline-block; margin-top: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">⭐ SÍ ES RESPONSABLE DE LOCAL DE VOTACIÓN</span>`
+        : `<span style="background: #e2e8f0; color: #475569; padding: 5px 12px; border-radius: 6px; font-size: 12px; font-weight: bold; display: inline-block; margin-top: 8px;">NO ES RESPONSABLE DE LOCAL DE VOTACIÓN</span>`;
+
+      const tipoAsignacion = obtenerDato(personaEncontrada, "tipo asignacion");
+      let badgeTipo = (tipoAsignacion !== "No registrado" && tipoAsignacion.trim() !== "") 
+        ? `<span style="background: #2563eb; color: white; padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: bold; letter-spacing: 0.5px; box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);">${tipoAsignacion}</span>` : "";
+
+      let infoRuta = baseDatosRutas.find(f => obtenerDato(f, "CODIGO DE LV") == idLocalSipe && obtenerDato(f, "CODIGO DE LV") !== "No registrado");
+
+      const departamento = obtenerDato(personaEncontrada, "departamento");
+      const provincia = obtenerDato(personaEncontrada, "provincia");
+      const distrito = obtenerDato(personaEncontrada, "distrito");
+      const localVotacion = obtenerDato(personaEncontrada, "local de votacion");
+      const centroPoblado = obtenerDato(infoRuta, "centro poblado");
+      let direccion = obtenerDato(infoRuta, "direccion del local de votacion");
+      if(direccion === "No registrado") direccion = obtenerDato(infoRuta, "direccion");
+
+      let htmlCentroPoblado = (centroPoblado !== "No registrado" && centroPoblado.trim() !== "") 
+        ? `<p style="margin: 0; padding-bottom: 3px;"><b>Centro Poblado:</b> ${centroPoblado}</p>` : "";
+
+      let htmlBloqueInferior = "";
+
+      if (esRespBool) {
+        const numRuta = obtenerDato(infoRuta, "numero de ruta");
+        const descRuta = obtenerDato(infoRuta, "descripcion de ruta"); 
+        const tipoMovilidad = obtenerDato(infoRuta, "tipo de movilidad");
+        const fechaPartida = formatearFecha(obtenerDato(infoRuta, "fecha de salida"));
+        const horaPartida = obtenerDato(infoRuta, "hora de salida");
+        const fechaLlegada = formatearFecha(obtenerDato(infoRuta, "fecha de llegada"));
+        const horaLlegada = obtenerDato(infoRuta, "hora de llegada");
+
+        htmlBloqueInferior = `
+          <div style="background: #eff6ff; border: 1px solid #bfdbfe; border-left: 5px solid #1e3a8a; padding: 20px; border-radius: 8px; text-align: left; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.02);">
+            <h4 style="color: #1e3a8a; margin-top: 0; margin-bottom: 15px; border-bottom: 1px solid #bfdbfe; padding-bottom: 10px; text-transform: uppercase; letter-spacing: 1px;">🚌 INFORMACIÓN DE DESPLIEGUE</h4>
+            <div style="line-height: 1.8; color: #1e3a8a; font-size: 14.5px;">
+              <p style="margin: 0; padding-bottom: 5px;"><b>Número de Ruta:</b> ${numRuta}</p>
+              <div style="background: white; border: 1px solid #bfdbfe; border-radius: 6px; padding: 12px; margin: 10px 0; font-size: 14px;">
+                <p style="margin: 0; color: #1e3a8a; padding-bottom: 6px; border-bottom: 1px solid #eff6ff;">
+                  <b>Salida:</b> &nbsp;📅 ${fechaPartida} &nbsp;|&nbsp; ⏰ ${horaPartida}
+                </p>
+                <p style="margin: 6px 0 0 0; color: #1e3a8a;">
+                  <b>Llegada:</b> 📅 ${fechaLlegada} &nbsp;|&nbsp; ⏰ ${horaLlegada}
+                </p>
+              </div>
+              <p style="margin: 0; padding-top: 5px; padding-bottom: 5px;"><b>Recorrido de Ruta:</b> ${descRuta}</p>
+              <p style="margin: 0;"><b>Tipo de Movilidad:</b> <span style="background:#dbeafe; padding: 3px 8px; border-radius:4px; font-weight:bold;">${tipoMovilidad}</span></p>
+            </div>
+          </div>`;
+      } else {
+        let responsableNombre = "No asignado en la base de datos";
+        let responsableCelular = "";
+        
+        for(let k = 0; k < baseDatosSipe.length; k++){
+            if(obtenerDato(baseDatosSipe[k], "ID LOCAL") == idLocalSipe && 
+              (obtenerDato(baseDatosSipe[k], "es responsable").toUpperCase() === "SI" || obtenerDato(baseDatosSipe[k], "es responsable").toUpperCase() === "SÍ")){
+                responsableNombre = obtenerDato(baseDatosSipe[k], "nombre completo");
+                responsableCelular = String(obtenerDato(baseDatosSipe[k], "celular")).replace(/[^0-9]/g, "");
+                break;
+            }
+        }
+
+        let btnWhatsapp = "";
+        if(responsableCelular !== "" && responsableCelular !== "No registrado"){
+            let mensaje = `Hola ${responsableNombre}, soy ${nombre}, apoyo FLV asignado al local de votación ${localVotacion}.`;
+            let urlWa = `https://wa.me/51${responsableCelular}?text=${encodeURIComponent(mensaje)}`;
+            btnWhatsapp = `
+              <a href="${urlWa}" target="_blank" style="display: inline-flex; align-items: center; justify-content: center; width: 100%; box-sizing: border-box; margin-top: 15px; background: #25D366; color: white; padding: 12px 15px; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 15px; transition: background 0.3s;">
+                💬 Escribir al WhatsApp
+              </a>`;
+        }
+
+        htmlBloqueInferior = `
+          <div style="background: #fffbeb; border: 1px solid #fef08a; border-left: 5px solid #ca8a04; padding: 20px; border-radius: 8px; text-align: left; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.02);">
+            <h4 style="color: #ca8a04; margin-top: 0; margin-bottom: 10px; border-bottom: 1px solid #fef08a; padding-bottom: 10px; text-transform: uppercase; letter-spacing: 1px;">⚠️ ATENCIÓN</h4>
+            <p style="color: #854d0e; font-size: 14.5px; margin: 0 0 15px 0;">Comunicarse con su responsable de local de votación para coordinar los detalles del despliegue.</p>
+            <div style="background: white; border: 1px solid #fef08a; padding: 12px; border-radius: 6px;">
+              <p style="margin: 0; color: #422006; font-size: 13px; text-transform: uppercase; font-weight: bold; letter-spacing: 0.5px;">Responsable Asignado:</p>
+              <p style="margin: 4px 0 0 0; color: #854d0e; font-size: 16px; font-weight: bold;">${responsableNombre}</p>
+            </div>
+            ${btnWhatsapp}
+          </div>`;
+      }
+
+      // BOTÓN DINÁMICO (Dependiendo de si viene del panel o de una búsqueda normal)
+      let botonAccionHTML = esModoMaestro 
+        ? `<button onclick="volverAlPanelMaestro()" class="btn-volver" style="margin-top: 10px;">⬅ Volver a la Lista</button>`
+        : `<button onclick="location.reload()" class="btn-volver" style="margin-top: 10px;">Realizar otra consulta</button>`;
+
+      panelDetalle.innerHTML = `
+        <div style="text-align: center; margin-top: -10px;">
+          <h2 style="color: #b71c1c; margin-bottom: 5px; font-size: 24px;">Bienvenido FLV</h2>
+          <div style="margin-bottom: 15px;">
+            <h3 style="color: #1e293b; margin-top: 0; margin-bottom: 0; font-size: 20px;">${nombre}</h3>
+            ${badgeResponsable}
+          </div>
+          <p style="color: #64748b; font-size: 15px; margin-top: 0; margin-bottom: 20px; letter-spacing: 1px; font-weight: bold;">
+            DNI: ${dni} &nbsp;|&nbsp; 📱 ${celular}
+          </p>
+          
+          <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-left: 5px solid #166534; padding: 20px; border-radius: 8px; text-align: left; margin-bottom: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.02);">
+            <h4 style="color: #166534; margin-top: 0; margin-bottom: 15px; border-bottom: 1px solid #bbf7d0; padding-bottom: 10px; text-transform: uppercase; letter-spacing: 1px; display: flex; align-items: center; gap: 10px;">
+              📍 LUGAR ASIGNADO 
+              ${badgeTipo}
+            </h4>
+            <div style="line-height: 1.8; color: #166534; font-size: 14.5px;">
+              <p style="margin: 0; padding-bottom: 3px;"><b>Departamento:</b> ${departamento}</p>
+              <p style="margin: 0; padding-bottom: 3px;"><b>Provincia:</b> ${provincia}</p>
+              <p style="margin: 0; padding-bottom: 3px;"><b>Distrito:</b> ${distrito}</p>
+              ${htmlCentroPoblado}
+              <p style="margin: 0; padding-bottom: 3px;"><b>Local de Votación:</b> ${localVotacion}</p>
+              <p style="margin: 0;"><b>Dirección:</b> ${direccion}</p>
+            </div>
+          </div>
+          
+          ${htmlBloqueInferior}
+          
+          ${botonAccionHTML}
+          
+          <p style="margin-top: 15px; margin-bottom: 0; font-size: 13px; color: #94a3b8; font-weight: 500; letter-spacing: 0.5px;">Designed by Reynaldo</p>
+        </div>
+      `;
+      
+      // Mostrar el panel de detalle con un pequeño retraso para permitir la animación de la tarjeta
+      setTimeout(() => {
+        panelDetalle.style.display = "block";
+      }, 150);
+    }
+
+    // LÓGICA DE FILTRADO DE LA TABLA MAESTRA
     function filtrarTablaAdmin() {
       const texto = normalizar(document.getElementById("filtro-texto").value);
       const tipo = document.getElementById("filtro-tipo").value;
@@ -370,7 +379,6 @@
       for (let i = 0; i < baseDatosSipe.length; i++) {
         const fila = baseDatosSipe[i];
         
-        // Evitar filas vacías
         const dni = obtenerDato(fila, "DNI");
         if (dni === "No registrado") continue;
 
@@ -380,23 +388,18 @@
         
         let rolStr = (esResp === "SI" || esResp === "SÍ") ? "RESPONSABLE" : "APOYO";
 
-        // Filtro de Texto
         if (texto !== "" && !normalizar(dni).includes(texto) && !normalizar(nombre).includes(texto)) continue;
-        
-        // Filtro de Tipo
         if (tipo !== "ALL" && normalizar(tipoAsig) !== normalizar(tipo)) continue;
-
-        // Filtro de Rol
         if (rol !== "ALL" && rolStr !== rol) continue;
 
-        // Construir fila
         const badgeRol = rolStr === "RESPONSABLE" 
             ? `<span style="background: #fef08a; color: #854d0e; padding: 3px 6px; border-radius: 4px; font-size: 11px; font-weight: bold;">⭐ RESP</span>`
             : `<span style="background: #e2e8f0; color: #475569; padding: 3px 6px; border-radius: 4px; font-size: 11px; font-weight: bold;">APOYO</span>`;
             
+        // El DNI AHORA ES UN ENLACE CLICKEABLE
         htmlFilas += `
           <tr>
-            <td style="font-weight:bold;">${dni}</td>
+            <td><a class="link-dni" onclick="verPersonaMaestro('${dni}')">${dni}</a></td>
             <td>${nombre}</td>
             <td>${obtenerDato(fila, "celular")}</td>
             <td><span style="background: #dbeafe; color: #1e40af; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: bold;">${tipoAsig}</span></td>
@@ -414,6 +417,14 @@
 
       tbody.innerHTML = htmlFilas;
       conteo.innerHTML = `Mostrando <b>${contador}</b> registros encontrados`;
+    }
+
+    // Disparador del click en el DNI de la tabla
+    function verPersonaMaestro(dniSeleccionado) {
+      const persona = baseDatosSipe.find(f => obtenerDato(f, "DNI") === String(dniSeleccionado));
+      if(persona) {
+        renderizarTarjetaDetalle(persona, true); // true = Le indicamos que viene del Panel Maestro
+      }
     }
   </script>
 </body>
