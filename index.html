@@ -10,11 +10,9 @@
     input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
     input[type=number] { -moz-appearance: textfield; }
 
-    /* Se redujo el padding de body para acortar márgenes generales */
     body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f6f9; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 10px; box-sizing: border-box; }
     
-    /* Se redujo el padding superior de la tarjeta (de 30px a 20px) para acortar el espacio rojo */
-    .tarjeta { background: white; padding: 20px 30px 30px 30px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.15); max-width: 450px; width: 100%; border-top: 6px solid #b71c1c; }
+    .tarjeta { background: white; padding: 20px 30px 30px 30px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.15); max-width: 450px; width: 100%; border-top: 6px solid #b71c1c; transition: max-width 0.5s ease; }
     
     .titulo { text-align: center; color: #2c3e50; margin-top: 0; font-weight: 700; letter-spacing: 0.5px; }
     .subtitulo { text-align: center; color: #666; font-size: 14px; margin-bottom: 25px; }
@@ -24,12 +22,23 @@
     .btn-consultar:hover { background: #901616; }
     .btn-volver { margin-top: 20px; padding: 12px; width: 100%; font-size: 14px; background: white; color: #b71c1c; border: 2px solid #b71c1c; border-radius: 6px; cursor: pointer; font-weight: bold; transition: all 0.3s; display: block; text-transform: uppercase; }
     .btn-volver:hover { background: #fef2f2; }
+    
+    /* ESTILOS DEL PANEL MAESTRO */
+    .admin-controls { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; }
+    .admin-input { flex: 1; min-width: 200px; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; outline: none; }
+    .admin-select { padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; outline: none; background: white; cursor: pointer; }
+    .table-container { overflow-x: auto; max-height: 500px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 8px; }
+    .admin-table { width: 100%; border-collapse: collapse; font-size: 13.5px; text-align: left; }
+    .admin-table th { background: #1e293b; color: white; padding: 12px; position: sticky; top: 0; z-index: 10; font-weight: 600; white-space: nowrap; }
+    .admin-table td { border-bottom: 1px solid #e2e8f0; padding: 10px 12px; color: #334155; }
+    .admin-table tr:hover { background: #f8fafc; }
+    
     @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
   </style>
 </head>
 <body>
 
-  <div class="tarjeta">
+  <div class="tarjeta" id="tarjeta-principal">
     <div id="pantalla-busqueda">
       <h2 class="titulo">Consulta FLV</h2>
       <p class="subtitulo">Ingrese el número de DNI</p>
@@ -42,7 +51,11 @@
   </div>
 
   <script>
+    // VARIABLE GLOBAL PARA EL PANEL MAESTRO
+    let baseDatosSipe = [];
+
     function normalizar(texto) {
+      if(!texto) return "";
       return texto.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[¿?]/g, "").trim();
     }
 
@@ -76,7 +89,13 @@
       const dniIngresado = document.getElementById("dni").value.trim();
       const resultadosDiv = document.getElementById("resultados");
       const pantallaBusqueda = document.getElementById("pantalla-busqueda");
+      const tarjeta = document.getElementById("tarjeta-principal");
       
+      // =========================================================
+      // DNI MAESTRO PARA ABRIR EL PANEL DE CONTROL
+      const DNI_MAESTRO = "99999999"; 
+      // =========================================================
+
       if(dniIngresado.length !== 8) {
         resultadosDiv.innerHTML = "<p style='color:#b71c1c; text-align:center; font-weight:bold; background: #fee2e2; padding: 10px; border-radius: 6px;'>El DNI debe tener exactamente 8 dígitos.</p>";
         return;
@@ -93,6 +112,17 @@
         skipEmptyLines: true,
         complete: function(resultadosSipe) {
           const datosSipe = resultadosSipe.data;
+          
+          // ---- LÓGICA DEL PANEL MAESTRO ----
+          if (dniIngresado === DNI_MAESTRO) {
+            baseDatosSipe = datosSipe; // Guardamos los datos para filtrar
+            pantallaBusqueda.style.display = "none";
+            tarjeta.style.maxWidth = "1100px"; // Expandimos la tarjeta
+            
+            mostrarPanelMaestro();
+            return;
+          }
+          // ----------------------------------
 
           let personaEncontrada = null;
           for (let i = 0; i < datosSipe.length; i++) {
@@ -108,7 +138,6 @@
             let msjAyuda = `Hola, mi DNI ${dniIngresado} no aparece en el sistema de consulta FLV. Solicito asistencia.`;
             let urlWaAyuda = `https://wa.me/51991260103?text=${encodeURIComponent(msjAyuda)}`;
 
-            // PANTALLA DE ERROR MODIFICADA
             resultadosDiv.innerHTML = `
               <div style='background: #fffbeb; border: 1px solid #fef08a; padding: 25px 20px; border-radius: 8px; text-align: center; margin-top: 5px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); animation: fadeIn 0.5s ease-in;'>
                 <h4 style='margin-top:0; margin-bottom: 20px; color: #ca8a04; font-size: 18px;'>❌ DNI NO ENCONTRADO</h4>
@@ -231,7 +260,6 @@
                   </div>`;
               }
 
-              // Se acortó margin-top a 0 en el contenedor principal para acercarlo más arriba
               resultadosDiv.innerHTML = `
                 <div style="text-align: center; margin-top: -10px; animation: fadeIn 0.6s ease-in;">
                   <h2 style="color: #b71c1c; margin-bottom: 5px; font-size: 24px;">Bienvenido FLV</h2>
@@ -244,12 +272,10 @@
                   </p>
                   
                   <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-left: 5px solid #166534; padding: 20px; border-radius: 8px; text-align: left; margin-bottom: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.02);">
-                    
                     <h4 style="color: #166534; margin-top: 0; margin-bottom: 15px; border-bottom: 1px solid #bbf7d0; padding-bottom: 10px; text-transform: uppercase; letter-spacing: 1px; display: flex; align-items: center; gap: 10px;">
                       📍 LUGAR ASIGNADO 
                       ${badgeTipo}
                     </h4>
-
                     <div style="line-height: 1.8; color: #166534; font-size: 14.5px;">
                       <p style="margin: 0; padding-bottom: 3px;"><b>Departamento:</b> ${departamento}</p>
                       <p style="margin: 0; padding-bottom: 3px;"><b>Provincia:</b> ${provincia}</p>
@@ -262,20 +288,132 @@
                   
                   ${htmlBloqueInferior}
                   <button onclick="location.reload()" class="btn-volver" style="margin-top: 10px;">Realizar otra consulta</button>
-                  
                   <p style="margin-top: 15px; margin-bottom: 0; font-size: 13px; color: #94a3b8; font-weight: 500; letter-spacing: 0.5px;">Designed by Reynaldo</p>
                 </div>
               `;
-            },
-            error: function() {
-              resultadosDiv.innerHTML = `<p style='color:#b71c1c; text-align:center; background: #fee2e2; padding: 10px; border-radius: 6px;'>Error interno: No se pudo leer datos.csv</p>`;
             }
           });
-        },
-        error: function() {
-          resultadosDiv.innerHTML = `<p style='color:#b71c1c; text-align:center; background: #fee2e2; padding: 10px; border-radius: 6px;'>Error interno: Asegúrate de haber subido sipe.csv a GitHub.</p>`;
         }
       });
+    }
+
+    // =========================================================
+    // FUNCIONES DEL PANEL MAESTRO (ADMINISTRADOR)
+    // =========================================================
+    function mostrarPanelMaestro() {
+      const resultadosDiv = document.getElementById("resultados");
+      
+      resultadosDiv.innerHTML = `
+        <div style="animation: fadeIn 0.6s ease-in;">
+          <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #e2e8f0; padding-bottom: 15px; margin-bottom: 20px;">
+            <div>
+              <h2 style="color: #1e293b; margin: 0; font-size: 24px;">🛡️ Panel Maestro FLV</h2>
+              <p id="conteo-resultados" style="color: #64748b; margin: 5px 0 0 0; font-size: 14px;">Cargando base de datos...</p>
+            </div>
+            <button onclick="location.reload()" style="background: #f1f5f9; color: #334155; border: 1px solid #cbd5e1; padding: 8px 15px; border-radius: 6px; cursor: pointer; font-weight: bold;">Salir</button>
+          </div>
+
+          <div class="admin-controls">
+            <input type="text" id="filtro-texto" class="admin-input" placeholder="🔍 Buscar DNI o Nombre..." onkeyup="filtrarTablaAdmin()">
+            
+            <select id="filtro-tipo" class="admin-select" onchange="filtrarTablaAdmin()">
+              <option value="ALL">Todos los Tipos</option>
+              <option value="URBANO">Urbano</option>
+              <option value="INTERMEDIO">Intermedio</option>
+              <option value="LEJANO">Lejano</option>
+              <option value="ESPECIAL">Especial</option>
+            </select>
+            
+            <select id="filtro-rol" class="admin-select" onchange="filtrarTablaAdmin()">
+              <option value="ALL">Todos los Roles</option>
+              <option value="RESPONSABLE">Responsables</option>
+              <option value="APOYO">Apoyos</option>
+            </select>
+          </div>
+
+          <div class="table-container">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>DNI</th>
+                  <th>Nombre Completo</th>
+                  <th>Celular</th>
+                  <th>Tipo</th>
+                  <th>Distrito</th>
+                  <th>Local de Votación</th>
+                  <th>Rol</th>
+                </tr>
+              </thead>
+              <tbody id="admin-tbody">
+              </tbody>
+            </table>
+          </div>
+          
+          <p style="text-align:center; margin-top: 20px; font-size: 13px; color: #94a3b8; font-weight: 500; letter-spacing: 0.5px;">Designed by Reynaldo</p>
+        </div>
+      `;
+
+      filtrarTablaAdmin(); // Carga inicial
+    }
+
+    function filtrarTablaAdmin() {
+      const texto = normalizar(document.getElementById("filtro-texto").value);
+      const tipo = document.getElementById("filtro-tipo").value;
+      const rol = document.getElementById("filtro-rol").value;
+      
+      const tbody = document.getElementById("admin-tbody");
+      const conteo = document.getElementById("conteo-resultados");
+      
+      let htmlFilas = "";
+      let contador = 0;
+
+      for (let i = 0; i < baseDatosSipe.length; i++) {
+        const fila = baseDatosSipe[i];
+        
+        // Evitar filas vacías
+        const dni = obtenerDato(fila, "DNI");
+        if (dni === "No registrado") continue;
+
+        const nombre = obtenerDato(fila, "nombre completo");
+        const tipoAsig = obtenerDato(fila, "tipo asignacion");
+        const esResp = obtenerDato(fila, "es responsable").toUpperCase();
+        
+        let rolStr = (esResp === "SI" || esResp === "SÍ") ? "RESPONSABLE" : "APOYO";
+
+        // Filtro de Texto
+        if (texto !== "" && !normalizar(dni).includes(texto) && !normalizar(nombre).includes(texto)) continue;
+        
+        // Filtro de Tipo
+        if (tipo !== "ALL" && normalizar(tipoAsig) !== normalizar(tipo)) continue;
+
+        // Filtro de Rol
+        if (rol !== "ALL" && rolStr !== rol) continue;
+
+        // Construir fila
+        const badgeRol = rolStr === "RESPONSABLE" 
+            ? `<span style="background: #fef08a; color: #854d0e; padding: 3px 6px; border-radius: 4px; font-size: 11px; font-weight: bold;">⭐ RESP</span>`
+            : `<span style="background: #e2e8f0; color: #475569; padding: 3px 6px; border-radius: 4px; font-size: 11px; font-weight: bold;">APOYO</span>`;
+            
+        htmlFilas += `
+          <tr>
+            <td style="font-weight:bold;">${dni}</td>
+            <td>${nombre}</td>
+            <td>${obtenerDato(fila, "celular")}</td>
+            <td><span style="background: #dbeafe; color: #1e40af; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: bold;">${tipoAsig}</span></td>
+            <td>${obtenerDato(fila, "distrito")}</td>
+            <td style="font-size: 12px;">${obtenerDato(fila, "local de votacion")}</td>
+            <td>${badgeRol}</td>
+          </tr>
+        `;
+        contador++;
+      }
+
+      if(contador === 0) {
+        htmlFilas = `<tr><td colspan="7" style="text-align:center; padding: 20px; color:#64748b;">No se encontraron resultados</td></tr>`;
+      }
+
+      tbody.innerHTML = htmlFilas;
+      conteo.innerHTML = `Mostrando <b>${contador}</b> registros encontrados`;
     }
   </script>
 </body>
