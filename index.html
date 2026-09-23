@@ -80,7 +80,7 @@
 
       resultadosDiv.innerHTML = "<p style='text-align:center; color: #475569; font-weight:bold;'>Verificando Identidad...</p>";
 
-      // LECTURA LOCAL (Sin depender de Google, APIs o enlaces externos)
+      // LECTURA LOCAL DIRECTA DESDE GITHUB
       const url_SIPE = "sipe.csv";
       const url_DATOS = "datos.csv";
 
@@ -113,6 +113,9 @@
                   💬 WhatsApp (991 260 103)
                 </a>
                 <button onclick="location.reload()" class="btn-volver" style="margin-top: 20px;">Realizar otra consulta</button>
+                
+                <!-- FIRMA DE DISEÑO -->
+                <p style="margin-top: 20px; margin-bottom: 0; font-size: 13px; color: #94a3b8; font-weight: 500; letter-spacing: 0.5px;">Designed by Reynaldo</p>
               </div>`;
             return; 
           }
@@ -131,11 +134,11 @@
             ? `<span style="background: #fef08a; color: #854d0e; padding: 5px 12px; border-radius: 6px; font-size: 12px; font-weight: bold; display: inline-block; margin-top: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">⭐ SÍ ES RESPONSABLE DE LOCAL DE VOTACIÓN</span>`
             : `<span style="background: #e2e8f0; color: #475569; padding: 5px 12px; border-radius: 6px; font-size: 12px; font-weight: bold; display: inline-block; margin-top: 8px;">NO ES RESPONSABLE DE LOCAL DE VOTACIÓN</span>`;
 
-          // ETIQUETA TIPO ASIGNACIÓN (URBANO, INTERMEDIO, LEJANO, ESPECIAL)
+          // ETIQUETA TIPO ASIGNACIÓN (URBANO, INTERMEDIO, LEJANO, ESPECIAL) - MÁS GRANDE Y AZUL
           const tipoAsignacion = obtenerDato(personaEncontrada, "tipo asignacion");
           let badgeTipo = "";
           if (tipoAsignacion !== "No registrado" && tipoAsignacion.trim() !== "") {
-            badgeTipo = `<span style="background: #dcfce3; color: #166534; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: bold; letter-spacing: 0.5px; border: 1px solid #bbf7d0;">${tipoAsignacion}</span>`;
+            badgeTipo = `<span style="background: #2563eb; color: white; padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: bold; letter-spacing: 0.5px; box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);">${tipoAsignacion}</span>`;
           }
 
           Papa.parse(url_DATOS, {
@@ -242,7 +245,6 @@
                   
                   <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-left: 5px solid #166534; padding: 20px; border-radius: 8px; text-align: left; margin-bottom: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.02);">
                     
-                    <!-- LUGAR ASIGNADO Y TIPO (URBANO/INTERMEDIO...) -->
                     <h4 style="color: #166534; margin-top: 0; margin-bottom: 15px; border-bottom: 1px solid #bbf7d0; padding-bottom: 10px; text-transform: uppercase; letter-spacing: 1px; display: flex; align-items: center; gap: 10px;">
                       📍 LUGAR ASIGNADO 
                       ${badgeTipo}
@@ -260,6 +262,9 @@
                   
                   ${htmlBloqueInferior}
                   <button onclick="location.reload()" class="btn-volver">Realizar otra consulta</button>
+                  
+                  <!-- FIRMA DE DISEÑO -->
+                  <p style="margin-top: 20px; margin-bottom: 0; font-size: 13px; color: #94a3b8; font-weight: 500; letter-spacing: 0.5px;">Designed by Reynaldo</p>
                 </div>
               `;
             },
