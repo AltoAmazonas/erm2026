@@ -6,42 +6,44 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
   <style>
+    /* Desactivar flechas en inputs numéricos */
     input[type=number]::-webkit-inner-spin-button, 
     input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
     input[type=number] { -moz-appearance: textfield; }
 
-    /* Fondo ligeramente más moderno (Slate claro) */
-    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f1f5f9; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 10px; box-sizing: border-box; }
+    /* Fondo y estructura base */
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f4f8; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 10px; box-sizing: border-box; }
     
-    /* Tarjeta con bordes más redondeados y línea superior color vino/granate */
-    .tarjeta { background: white; padding: 20px 30px 30px 30px; border-radius: 16px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); max-width: 450px; width: 100%; border-top: 8px solid #7f1d1d; transition: max-width 0.4s ease-in-out; }
+    /* Tarjeta V2: Bordes redondeados y sombra premium */
+    .tarjeta { background: white; padding: 25px 30px; border-radius: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.08); max-width: 450px; width: 100%; border-top: 8px solid #991b1b; transition: max-width 0.4s cubic-bezier(0.25, 0.8, 0.25, 1); }
     
     .titulo { text-align: center; color: #1e293b; margin-top: 0; font-weight: 800; letter-spacing: 0.5px; font-size: 26px; }
     .subtitulo { text-align: center; color: #64748b; font-size: 14px; margin-bottom: 25px; }
     
-    .input-dni { padding: 15px; font-size: 18px; border: 2px solid #cbd5e1; border-radius: 8px; text-align: center; outline: none; font-weight: bold; letter-spacing: 3px; color: #333; transition: all 0.3s; background-color: #f8fafc; }
-    .input-dni:focus { border-color: #7f1d1d; background-color: #ffffff; box-shadow: 0 0 0 3px rgba(127, 29, 29, 0.1); }
+    .input-dni { padding: 15px; font-size: 20px; border: 2px solid #cbd5e1; border-radius: 10px; text-align: center; outline: none; font-weight: bold; letter-spacing: 4px; color: #1e293b; transition: all 0.3s; background-color: #f8fafc; }
+    .input-dni:focus { border-color: #991b1b; background-color: #ffffff; box-shadow: 0 0 0 4px rgba(153, 27, 27, 0.1); }
     
-    /* Botón principal con degradado elegante */
-    .btn-consultar { padding: 15px; font-size: 16px; background: linear-gradient(135deg, #991b1b, #7f1d1d); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; transition: transform 0.2s, box-shadow 0.2s; width: 100%; box-shadow: 0 4px 6px rgba(153, 27, 27, 0.2); }
-    .btn-consultar:hover { transform: translateY(-2px); box-shadow: 0 6px 12px rgba(153, 27, 27, 0.3); }
+    /* Botón V2: Degradado moderno */
+    .btn-consultar { padding: 16px; font-size: 16px; background: linear-gradient(135deg, #b71c1c, #991b1b); color: white; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; transition: transform 0.2s, box-shadow 0.2s; width: 100%; box-shadow: 0 4px 10px rgba(183, 28, 28, 0.3); }
+    .btn-consultar:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(183, 28, 28, 0.4); }
     
-    /* Botón volver actualizado */
-    .btn-volver { margin-top: 20px; padding: 12px; width: 100%; font-size: 14px; background: white; color: #7f1d1d; border: 2px solid #7f1d1d; border-radius: 8px; cursor: pointer; font-weight: bold; transition: all 0.3s; display: block; text-transform: uppercase; }
+    .btn-volver { margin-top: 20px; padding: 12px; width: 100%; font-size: 14px; background: white; color: #991b1b; border: 2px solid #991b1b; border-radius: 10px; cursor: pointer; font-weight: bold; transition: all 0.3s; display: block; text-transform: uppercase; }
     .btn-volver:hover { background: #fef2f2; }
     
     /* ESTILOS DEL PANEL MAESTRO */
     .admin-controls { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; }
-    .admin-input { flex: 1; min-width: 200px; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; outline: none; }
-    .admin-select { padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; outline: none; background: white; cursor: pointer; }
-    .table-container { overflow-x: auto; max-height: 500px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 8px; }
+    .admin-input { flex: 1; min-width: 200px; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; outline: none; font-size: 14px; }
+    .admin-select { padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; outline: none; background: white; cursor: pointer; font-size: 14px; }
+    .table-container { overflow-x: auto; max-height: 500px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 10px; }
     .admin-table { width: 100%; border-collapse: collapse; font-size: 13.5px; text-align: left; }
-    .admin-table th { background: #0f172a; color: white; padding: 12px; position: sticky; top: 0; z-index: 10; font-weight: 600; white-space: nowrap; }
-    .admin-table td { border-bottom: 1px solid #e2e8f0; padding: 10px 12px; color: #334155; }
+    .admin-table th { background: #0f172a; color: white; padding: 14px 12px; position: sticky; top: 0; z-index: 10; font-weight: 600; white-space: nowrap; }
+    .admin-table td { border-bottom: 1px solid #f1f5f9; padding: 12px; color: #334155; }
     .admin-table tr:hover { background: #f8fafc; }
     
-    .link-dni { color: #7f1d1d; font-weight: bold; text-decoration: none; border-bottom: 1px dashed #7f1d1d; cursor: pointer; transition: color 0.3s; }
+    .link-dni { color: #b71c1c; font-weight: bold; text-decoration: none; border-bottom: 1px dashed #b71c1c; cursor: pointer; transition: color 0.3s; }
     .link-dni:hover { color: #0f172a; border-bottom: 1px solid #0f172a; }
+
+    .footer-app { margin-top: 20px; font-size: 12.5px; color: #94a3b8; font-weight: 600; letter-spacing: 0.5px; display: flex; justify-content: space-between; border-top: 1px solid #e2e8f0; padding-top: 15px; }
 
     @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
   </style>
@@ -54,31 +56,32 @@
     <div id="pantalla-busqueda">
       <h2 class="titulo">Consulta FLV</h2>
       <p class="subtitulo">Sistema Integrado de Despliegue</p>
-      <div style="display: flex; flex-direction: column; gap: 15px; margin-bottom: 20px;">
-        <input type="number" id="dni" class="input-dni" placeholder="Ingresa DNI" oninput="if(this.value.length > 8) this.value = this.value.slice(0, 8);">
-        <button onclick="iniciarConsulta()" class="btn-consultar">Consultar</button>
+      <div style="display: flex; flex-direction: column; gap: 15px; margin-bottom: 10px;">
+        <!-- Se usa type="text" con patrón numérico para proteger los DNI que inician con CERO -->
+        <input type="text" inputmode="numeric" pattern="[0-9]*" id="dni" class="input-dni" placeholder="Ingrese DNI" oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 8);">
+        <button onclick="iniciarConsulta()" class="btn-consultar">Consultar Despliegue</button>
+      </div>
+      <div class="footer-app">
+        <span>Versión 1.2.01</span>
+        <span>Designed by Reynaldo</span>
       </div>
     </div>
 
     <!-- MENSAJE DE CARGA -->
-    <div id="mensaje-carga" style="display:none; text-align:center; padding: 20px; animation: fadeIn 0.3s ease-in;">
-      <p style="color: #475569; font-weight:bold; font-size: 16px;">⏳ Verificando Base de Datos...</p>
+    <div id="mensaje-carga" style="display:none; text-align:center; padding: 30px 10px; animation: fadeIn 0.3s ease-in;">
+      <p style="color: #475569; font-weight:bold; font-size: 16px;">⏳ Procesando Base de Datos...</p>
     </div>
 
-    <!-- PANTALLA ERROR DNI NO ENCONTRADO -->
+    <!-- PANTALLAS (Error, Detalle y Maestro) -->
     <div id="panel-error" style="display:none; animation: fadeIn 0.5s ease-in;"></div>
-
-    <!-- PANTALLA 2: DETALLE DEL FLV -->
     <div id="panel-detalle" style="display:none; animation: fadeIn 0.5s ease-in;"></div>
-
-    <!-- PANTALLA 3: PANEL MAESTRO -->
     <div id="panel-maestro" style="display:none; animation: fadeIn 0.6s ease-in;">
       <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #e2e8f0; padding-bottom: 15px; margin-bottom: 20px;">
         <div>
           <h2 style="color: #0f172a; margin: 0; font-size: 24px;">🛡️ Panel Maestro FLV</h2>
-          <p id="conteo-resultados" style="color: #64748b; margin: 5px 0 0 0; font-size: 14px;">Cargando base de datos...</p>
+          <p id="conteo-resultados" style="color: #64748b; margin: 5px 0 0 0; font-size: 14px;">Calculando registros...</p>
         </div>
-        <button onclick="location.reload()" style="background: #f1f5f9; color: #334155; border: 1px solid #cbd5e1; padding: 8px 15px; border-radius: 8px; cursor: pointer; font-weight: bold;">Salir</button>
+        <button onclick="location.reload()" style="background: #f8fafc; color: #334155; border: 1px solid #cbd5e1; padding: 10px 18px; border-radius: 8px; cursor: pointer; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">Salir</button>
       </div>
 
       <div class="admin-controls">
@@ -113,7 +116,10 @@
           <tbody id="admin-tbody"></tbody>
         </table>
       </div>
-      <p style="text-align:center; margin-top: 20px; font-size: 13px; color: #94a3b8; font-weight: 500; letter-spacing: 0.5px;">Designed by Reynaldo</p>
+      <div class="footer-app">
+        <span>Versión 1.2.01</span>
+        <span>Designed by Reynaldo</span>
+      </div>
     </div>
 
   </div>
@@ -125,7 +131,7 @@
 
     function normalizar(texto) {
       if(!texto) return "";
-      return texto.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[¿?]/g, "").trim();
+      return String(texto).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[¿?]/g, "").trim();
     }
 
     function obtenerDato(fila, nombreColumnaBuscada) {
@@ -150,6 +156,20 @@
       return fechaStr;
     }
 
+    // ⭐ AUTO-DETECCIÓN DE CABECERAS: Ignora títulos vacíos de Excel
+    const cleanChunk = function(chunk) {
+      let lines = chunk.split(/\r?\n/);
+      let headerIndex = 0;
+      for (let i = 0; i < lines.length; i++) {
+        let nLine = normalizar(lines[i]);
+        if (nLine.includes("departamento") && nLine.includes("provincia")) {
+          headerIndex = i;
+          break;
+        }
+      }
+      return lines.slice(headerIndex).join('\n');
+    };
+
     function iniciarConsulta() {
       const dniIngresado = document.getElementById("dni").value.trim();
       if(dniIngresado.length !== 8) {
@@ -161,12 +181,12 @@
       document.getElementById("mensaje-carga").style.display = "block";
 
       Papa.parse("sipe.csv", {
-        download: true, header: true, skipEmptyLines: true,
+        download: true, header: true, skipEmptyLines: true, beforeFirstChunk: cleanChunk,
         complete: function(resSipe) {
           baseDatosSipe = resSipe.data;
 
           Papa.parse("datos.csv", {
-            download: true, header: true, skipEmptyLines: true,
+            download: true, header: true, skipEmptyLines: true, beforeFirstChunk: cleanChunk,
             complete: function(resDatos) {
               baseDatosRutas = resDatos.data;
               document.getElementById("mensaje-carga").style.display = "none";
@@ -184,26 +204,34 @@
       });
     }
 
-    function procesarUsuarioNormal(dni) {
-      const persona = baseDatosSipe.find(f => obtenerDato(f, "DNI") === dni);
+    function procesarUsuarioNormal(dniBuscado) {
+      // Forzar a buscar exactamente 8 dígitos (compensando ceros perdidos en Excel)
+      const persona = baseDatosSipe.find(f => {
+        let dniFila = obtenerDato(f, "DNI");
+        if(dniFila !== "No registrado") dniFila = dniFila.padStart(8, '0');
+        return dniFila === dniBuscado;
+      });
       
       if (!persona) {
-        const urlWaAyuda = `https://wa.me/51991260103?text=${encodeURIComponent("Hola, mi DNI " + dni + " no aparece en el sistema de consulta FLV. Solicito asistencia.")}`;
+        const urlWaAyuda = `https://wa.me/51991260103?text=${encodeURIComponent("Hola, mi DNI " + dniBuscado + " no aparece en el sistema de consulta FLV. Solicito asistencia.")}`;
         const panelError = document.getElementById("panel-error");
         panelError.innerHTML = `
-          <div style='background: #fffbeb; border: 1px solid #fef08a; padding: 25px 20px; border-radius: 12px; text-align: center; margin-top: 5px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);'>
-            <h4 style='margin-top:0; margin-bottom: 20px; color: #ca8a04; font-size: 18px;'>❌ DNI NO ENCONTRADO</h4>
-            <a href="${urlWaAyuda}" target="_blank" style="display: inline-flex; align-items: center; justify-content: center; width: 100%; box-sizing: border-box; background: #25D366; color: white; padding: 14px 15px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 15px; transition: transform 0.2s;">
+          <div style='background: #fffbeb; border: 1px solid #fef08a; padding: 30px 20px; border-radius: 12px; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.05);'>
+            <h4 style='margin-top:0; margin-bottom: 25px; color: #ca8a04; font-size: 18px;'>❌ DNI NO ENCONTRADO</h4>
+            <a href="${urlWaAyuda}" target="_blank" style="display: inline-flex; align-items: center; justify-content: center; width: 100%; box-sizing: border-box; background: #25D366; color: white; padding: 16px 15px; text-decoration: none; border-radius: 10px; font-weight: bold; font-size: 15px; transition: transform 0.2s;">
               💬 Escribe aquí para mayor información
             </a>
-            <button onclick="location.reload()" class="btn-volver" style="margin-top: 20px;">Realizar otra consulta</button>
-            <p style="margin-top: 20px; margin-bottom: 0; font-size: 13px; color: #94a3b8; font-weight: 500; letter-spacing: 0.5px;">Designed by Reynaldo</p>
+            <button onclick="location.reload()" class="btn-volver" style="margin-top: 25px;">Realizar otra consulta</button>
+            <div class="footer-app">
+              <span>Versión 1.2.01</span>
+              <span>Designed by Reynaldo</span>
+            </div>
           </div>`;
         panelError.style.display = "block";
         return;
       }
       
-      renderizarTarjetaDetalle(persona, false);
+      renderizarTarjetaDetalle(persona, dniBuscado, false);
     }
 
     function mostrarPanelMaestro() {
@@ -219,13 +247,12 @@
       setTimeout(() => { document.getElementById("panel-maestro").style.display = "block"; }, 150);
     }
 
-    function renderizarTarjetaDetalle(personaEncontrada, esModoMaestro) {
+    function renderizarTarjetaDetalle(personaEncontrada, dniFormateado, esModoMaestro) {
       document.getElementById("panel-maestro").style.display = "none";
       document.getElementById("tarjeta-principal").style.maxWidth = "450px";
       const panelDetalle = document.getElementById("panel-detalle");
 
       let idLocalSipe = obtenerDato(personaEncontrada, "ID LOCAL");
-      const dni = obtenerDato(personaEncontrada, "DNI");
       const nombre = obtenerDato(personaEncontrada, "nombre completo");
       const celular = obtenerDato(personaEncontrada, "celular");
       
@@ -259,25 +286,24 @@
         const descRuta = obtenerDato(infoRuta, "descripcion de ruta"); 
         const tipoMovilidad = obtenerDato(infoRuta, "tipo de movilidad");
         
-        // SOLO SE EXTRAE SALIDA, LLEGADA FUE ELIMINADA
         const fechaPartida = formatearFecha(obtenerDato(infoRuta, "fecha de salida"));
         const horaPartida = obtenerDato(infoRuta, "hora de salida");
 
+        // ELIMINADA FECHA Y HORA DE LLEGADA
         htmlBloqueInferior = `
-          <div style="background: #eff6ff; border: 1px solid #bfdbfe; border-left: 5px solid #1e3a8a; padding: 20px; border-radius: 10px; text-align: left; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.02);">
+          <div style="background: #eff6ff; border: 1px solid #bfdbfe; border-left: 6px solid #1e3a8a; padding: 20px; border-radius: 12px; text-align: left; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.02);">
             <h4 style="color: #1e3a8a; margin-top: 0; margin-bottom: 15px; border-bottom: 1px solid #bfdbfe; padding-bottom: 10px; text-transform: uppercase; letter-spacing: 1px;">🚌 INFORMACIÓN DE DESPLIEGUE</h4>
             <div style="line-height: 1.8; color: #1e3a8a; font-size: 14.5px;">
               <p style="margin: 0; padding-bottom: 5px;"><b>Número de Ruta:</b> ${numRuta}</p>
               
-              <!-- CAJA DE SALIDA CENTRADA Y LIMPIA -->
-              <div style="background: white; border: 1px solid #bfdbfe; border-radius: 8px; padding: 12px; margin: 10px 0; font-size: 14px; text-align: center;">
+              <div style="background: white; border: 1px solid #bfdbfe; border-radius: 8px; padding: 15px; margin: 10px 0; font-size: 15px; text-align: center;">
                 <p style="margin: 0; color: #1e3a8a; font-weight: bold;">
-                  📅 ${fechaPartida} &nbsp;|&nbsp; ⏰ ${horaPartida}
+                  🚀 SALIDA: &nbsp;📅 ${fechaPartida} &nbsp;|&nbsp; ⏰ ${horaPartida}
                 </p>
               </div>
 
               <p style="margin: 0; padding-top: 5px; padding-bottom: 5px;"><b>Recorrido de Ruta:</b> ${descRuta}</p>
-              <p style="margin: 0;"><b>Tipo de Movilidad:</b> <span style="background:#dbeafe; padding: 3px 8px; border-radius:4px; font-weight:bold;">${tipoMovilidad}</span></p>
+              <p style="margin: 0;"><b>Tipo de Movilidad:</b> <span style="background:#dbeafe; padding: 4px 10px; border-radius:6px; font-weight:bold;">${tipoMovilidad}</span></p>
             </div>
           </div>`;
       } else {
@@ -298,13 +324,13 @@
             let mensaje = `Hola ${responsableNombre}, soy ${nombre}, apoyo FLV asignado al local de votación ${localVotacion}.`;
             let urlWa = `https://wa.me/51${responsableCelular}?text=${encodeURIComponent(mensaje)}`;
             btnWhatsapp = `
-              <a href="${urlWa}" target="_blank" style="display: inline-flex; align-items: center; justify-content: center; width: 100%; box-sizing: border-box; margin-top: 15px; background: #25D366; color: white; padding: 12px 15px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 15px; transition: transform 0.2s;">
+              <a href="${urlWa}" target="_blank" style="display: inline-flex; align-items: center; justify-content: center; width: 100%; box-sizing: border-box; margin-top: 15px; background: #25D366; color: white; padding: 14px 15px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 15px; transition: transform 0.2s;">
                 💬 Escribir al WhatsApp
               </a>`;
         }
 
         htmlBloqueInferior = `
-          <div style="background: #fffbeb; border: 1px solid #fef08a; border-left: 5px solid #ca8a04; padding: 20px; border-radius: 10px; text-align: left; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.02);">
+          <div style="background: #fffbeb; border: 1px solid #fef08a; border-left: 6px solid #ca8a04; padding: 20px; border-radius: 12px; text-align: left; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.02);">
             <h4 style="color: #ca8a04; margin-top: 0; margin-bottom: 10px; border-bottom: 1px solid #fef08a; padding-bottom: 10px; text-transform: uppercase; letter-spacing: 1px;">⚠️ ATENCIÓN</h4>
             <p style="color: #854d0e; font-size: 14.5px; margin: 0 0 15px 0;">Comunicarse con su responsable de local de votación para coordinar los detalles del despliegue.</p>
             <div style="background: white; border: 1px solid #fef08a; padding: 12px; border-radius: 8px;">
@@ -320,17 +346,17 @@
         : `<button onclick="location.reload()" class="btn-volver" style="margin-top: 10px;">Realizar otra consulta</button>`;
 
       panelDetalle.innerHTML = `
-        <div style="text-align: center; margin-top: -10px;">
-          <h2 style="color: #7f1d1d; margin-bottom: 5px; font-size: 24px;">Bienvenido FLV</h2>
+        <div style="text-align: center;">
+          <h2 style="color: #991b1b; margin-bottom: 5px; font-size: 26px;">Bienvenido FLV</h2>
           <div style="margin-bottom: 15px;">
-            <h3 style="color: #1e293b; margin-top: 0; margin-bottom: 0; font-size: 20px;">${nombre}</h3>
+            <h3 style="color: #0f172a; margin-top: 0; margin-bottom: 0; font-size: 20px;">${nombre}</h3>
             ${badgeResponsable}
           </div>
           <p style="color: #64748b; font-size: 15px; margin-top: 0; margin-bottom: 20px; letter-spacing: 1px; font-weight: bold;">
-            DNI: ${dni} &nbsp;|&nbsp; 📱 ${celular}
+            DNI: ${dniFormateado} &nbsp;|&nbsp; 📱 ${celular}
           </p>
           
-          <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-left: 5px solid #166534; padding: 20px; border-radius: 10px; text-align: left; margin-bottom: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.02);">
+          <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-left: 6px solid #166534; padding: 20px; border-radius: 12px; text-align: left; margin-bottom: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.02);">
             <h4 style="color: #166534; margin-top: 0; margin-bottom: 15px; border-bottom: 1px solid #bbf7d0; padding-bottom: 10px; text-transform: uppercase; letter-spacing: 1px; display: flex; align-items: center; gap: 10px;">
               📍 LUGAR ASIGNADO 
               ${badgeTipo}
@@ -346,10 +372,12 @@
           </div>
           
           ${htmlBloqueInferior}
-          
           ${botonAccionHTML}
           
-          <p style="margin-top: 15px; margin-bottom: 0; font-size: 13px; color: #94a3b8; font-weight: 500; letter-spacing: 0.5px;">Designed by Reynaldo</p>
+          <div class="footer-app">
+            <span>Versión 1.2.01</span>
+            <span>Designed by Reynaldo</span>
+          </div>
         </div>
       `;
       
@@ -370,8 +398,9 @@
       for (let i = 0; i < baseDatosSipe.length; i++) {
         const fila = baseDatosSipe[i];
         
-        const dni = obtenerDato(fila, "DNI");
+        let dni = obtenerDato(fila, "DNI");
         if (dni === "No registrado") continue;
+        dni = dni.padStart(8, '0');
 
         const nombre = obtenerDato(fila, "nombre completo");
         const tipoAsig = obtenerDato(fila, "tipo asignacion");
@@ -410,9 +439,13 @@
     }
 
     function verPersonaMaestro(dniSeleccionado) {
-      const persona = baseDatosSipe.find(f => obtenerDato(f, "DNI") === String(dniSeleccionado));
+      const persona = baseDatosSipe.find(f => {
+         let d = obtenerDato(f, "DNI");
+         if(d !== "No registrado") d = d.padStart(8, '0');
+         return d === String(dniSeleccionado);
+      });
       if(persona) {
-        renderizarTarjetaDetalle(persona, true);
+        renderizarTarjetaDetalle(persona, dniSeleccionado, true);
       }
     }
   </script>
