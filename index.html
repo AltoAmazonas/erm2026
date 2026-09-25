@@ -71,9 +71,10 @@
       <p style="color: #475569; font-weight:bold; font-size: 16px;">⏳ Procesando Base de Datos...</p>
     </div>
 
-    <!-- PANTALLAS (Error, Detalle y Maestro) -->
+    <!-- PANTALLAS -->
     <div id="panel-error" style="display:none; animation: fadeIn 0.5s ease-in;"></div>
     <div id="panel-detalle" style="display:none; animation: fadeIn 0.5s ease-in;"></div>
+    
     <div id="panel-maestro" style="display:none; animation: fadeIn 0.6s ease-in;">
       <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #e2e8f0; padding-bottom: 15px; margin-bottom: 20px;">
         <div>
@@ -139,11 +140,10 @@
       return llave && fila[llave] !== null && fila[llave] !== "" ? String(fila[llave]).trim() : "No registrado";
     }
 
-    // ⭐ FUNCIÓN ACTUALIZADA: INCLUYE EL NOMBRE DEL DÍA
+    // ⭐ FORMATO DE FECHA (CON DÍA DE LA SEMANA)
     function formatearFecha(fechaStr) {
       if (!fechaStr || fechaStr === "No registrado") return fechaStr;
       let fechaString = String(fechaStr).trim();
-      
       let dia, mes, anio;
 
       if (fechaString.includes("/")) {
@@ -163,16 +163,21 @@
       }
 
       if (dia && mes && anio) {
-        // Objeto Date en JS (Ojo: los meses empiezan en 0, por eso restamos 1 al mes)
         const fechaObj = new Date(anio, parseInt(mes) - 1, dia);
         const diasSemana = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
         const nombreDia = diasSemana[fechaObj.getDay()];
-        
-        // Retorna: Lunes, 02/10/2026
         return `${nombreDia}, ${dia}/${mes}/${anio}`;
       }
 
       return fechaString;
+    }
+
+    // ⭐ NUEVA FUNCIÓN: ELIMINAR LOS SEGUNDOS DE LA HORA
+    function formatearHora(horaStr) {
+      if (!horaStr || horaStr === "No registrado") return horaStr;
+      let horaString = String(horaStr).trim();
+      // Convierte "04:00:00 a. m." en "04:00 a. m."
+      return horaString.replace(/(:\d{2}):\d{2}/, '$1');
     }
 
     const cleanChunk = function(chunk) {
@@ -304,7 +309,8 @@
         const tipoMovilidad = obtenerDato(infoRuta, "tipo de movilidad");
         
         const fechaPartida = formatearFecha(obtenerDato(infoRuta, "fecha de salida"));
-        const horaPartida = obtenerDato(infoRuta, "hora de salida");
+        // SE APLICÓ LA FUNCIÓN PARA ELIMINAR LOS SEGUNDOS
+        const horaPartida = formatearHora(obtenerDato(infoRuta, "hora de salida"));
 
         htmlBloqueInferior = `
           <div style="background: #eff6ff; border: 1px solid #bfdbfe; border-left: 6px solid #1e3a8a; padding: 20px; border-radius: 12px; text-align: left; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.02);">
@@ -312,7 +318,7 @@
             <div style="line-height: 1.8; color: #1e3a8a; font-size: 14.5px;">
               <p style="margin: 0; padding-bottom: 5px;"><b>Número de Ruta:</b> ${numRuta}</p>
               
-              <div style="background: white; border: 1px solid #bfdbfe; border-radius: 8px; padding: 15px; margin: 10px 0; font-size: 14.5px; text-align: center;">
+              <div style="background: white; border: 1px solid #bfdbfe; border-radius: 8px; padding: 15px; margin: 10px 0; font-size: 15px; text-align: center;">
                 <p style="margin: 0; color: #1e3a8a; font-weight: bold;">
                   🚀 SALIDA: &nbsp;📅 ${fechaPartida} &nbsp;|&nbsp; ⏰ ${horaPartida}
                 </p>
