@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Consulta FLV - Rutas y Despliegue 2.0</title>
+  <title>Consulta FLV - Rutas y Despliegue 1.3.0</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
   <style>
@@ -14,21 +14,21 @@
     /* Fondo y estructura base */
     body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f4f8; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 10px; box-sizing: border-box; }
     
-    /* Tarjeta V2: Bordes redondeados y sombra premium */
-    .tarjeta { background: white; padding: 25px 30px; border-radius: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.08); max-width: 450px; width: 100%; border-top: 8px solid #991b1b; transition: max-width 0.4s cubic-bezier(0.25, 0.8, 0.25, 1); }
+    /* Tarjeta V3: Bordes redondeados, sombra premium y nuevo color Azul Zafiro */
+    .tarjeta { background: white; padding: 25px 30px; border-radius: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.08); max-width: 450px; width: 100%; border-top: 8px solid #1e40af; transition: max-width 0.4s cubic-bezier(0.25, 0.8, 0.25, 1); }
     
     .titulo { text-align: center; color: #1e293b; margin-top: 0; font-weight: 800; letter-spacing: 0.5px; font-size: 26px; }
     .subtitulo { text-align: center; color: #64748b; font-size: 14px; margin-bottom: 25px; }
     
     .input-dni { padding: 15px; font-size: 20px; border: 2px solid #cbd5e1; border-radius: 10px; text-align: center; outline: none; font-weight: bold; letter-spacing: 4px; color: #1e293b; transition: all 0.3s; background-color: #f8fafc; }
-    .input-dni:focus { border-color: #991b1b; background-color: #ffffff; box-shadow: 0 0 0 4px rgba(153, 27, 27, 0.1); }
+    .input-dni:focus { border-color: #1e40af; background-color: #ffffff; box-shadow: 0 0 0 4px rgba(30, 64, 175, 0.1); }
     
-    /* Botón V2: Degradado moderno */
-    .btn-consultar { padding: 16px; font-size: 16px; background: linear-gradient(135deg, #b71c1c, #991b1b); color: white; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; transition: transform 0.2s, box-shadow 0.2s; width: 100%; box-shadow: 0 4px 10px rgba(183, 28, 28, 0.3); }
-    .btn-consultar:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(183, 28, 28, 0.4); }
+    /* Botón V3: Degradado Azul Moderno */
+    .btn-consultar { padding: 16px; font-size: 16px; background: linear-gradient(135deg, #1d4ed8, #1e40af); color: white; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; transition: transform 0.2s, box-shadow 0.2s; width: 100%; box-shadow: 0 4px 10px rgba(29, 78, 216, 0.3); }
+    .btn-consultar:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(29, 78, 216, 0.4); }
     
-    .btn-volver { margin-top: 20px; padding: 12px; width: 100%; font-size: 14px; background: white; color: #991b1b; border: 2px solid #991b1b; border-radius: 10px; cursor: pointer; font-weight: bold; transition: all 0.3s; display: block; text-transform: uppercase; }
-    .btn-volver:hover { background: #fef2f2; }
+    .btn-volver { margin-top: 20px; padding: 12px; width: 100%; font-size: 14px; background: white; color: #1e40af; border: 2px solid #1e40af; border-radius: 10px; cursor: pointer; font-weight: bold; transition: all 0.3s; display: block; text-transform: uppercase; }
+    .btn-volver:hover { background: #eff6ff; }
     
     /* ESTILOS DEL PANEL MAESTRO */
     .admin-controls { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; }
@@ -40,7 +40,7 @@
     .admin-table td { border-bottom: 1px solid #f1f5f9; padding: 12px; color: #334155; }
     .admin-table tr:hover { background: #f8fafc; }
     
-    .link-dni { color: #b71c1c; font-weight: bold; text-decoration: none; border-bottom: 1px dashed #b71c1c; cursor: pointer; transition: color 0.3s; }
+    .link-dni { color: #1d4ed8; font-weight: bold; text-decoration: none; border-bottom: 1px dashed #1d4ed8; cursor: pointer; transition: color 0.3s; }
     .link-dni:hover { color: #0f172a; border-bottom: 1px solid #0f172a; }
 
     .footer-app { margin-top: 20px; font-size: 12.5px; color: #94a3b8; font-weight: 600; letter-spacing: 0.5px; display: flex; justify-content: space-between; border-top: 1px solid #e2e8f0; padding-top: 15px; }
@@ -61,7 +61,7 @@
         <button onclick="iniciarConsulta()" class="btn-consultar">Consultar Despliegue</button>
       </div>
       <div class="footer-app">
-        <span>Versión 1.2.01</span>
+        <span>Versión 1.3.0</span>
         <span>Designed by Reynaldo</span>
       </div>
     </div>
@@ -117,7 +117,7 @@
         </table>
       </div>
       <div class="footer-app">
-        <span>Versión 1.2.01</span>
+        <span>Versión 1.3.0</span>
         <span>Designed by Reynaldo</span>
       </div>
     </div>
@@ -172,7 +172,7 @@
       return fechaString;
     }
 
-    // ⭐ NUEVA FUNCIÓN: ELIMINAR LOS SEGUNDOS DE LA HORA
+    // ⭐ FUNCIÓN: ELIMINAR LOS SEGUNDOS DE LA HORA
     function formatearHora(horaStr) {
       if (!horaStr || horaStr === "No registrado") return horaStr;
       let horaString = String(horaStr).trim();
@@ -245,7 +245,7 @@
             </a>
             <button onclick="location.reload()" class="btn-volver" style="margin-top: 25px;">Realizar otra consulta</button>
             <div class="footer-app">
-              <span>Versión 1.2.01</span>
+              <span>Versión 1.3.0</span>
               <span>Designed by Reynaldo</span>
             </div>
           </div>`;
@@ -284,9 +284,10 @@
         ? `<span style="background: #fef08a; color: #854d0e; padding: 5px 12px; border-radius: 6px; font-size: 12px; font-weight: bold; display: inline-block; margin-top: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">⭐ SÍ ES RESPONSABLE DE LOCAL DE VOTACIÓN</span>`
         : `<span style="background: #e2e8f0; color: #475569; padding: 5px 12px; border-radius: 6px; font-size: 12px; font-weight: bold; display: inline-block; margin-top: 8px;">NO ES RESPONSABLE DE LOCAL DE VOTACIÓN</span>`;
 
+      // NUEVO COLOR PÚRPURA PARA LA ETIQUETA DE ASIGNACIÓN
       const tipoAsignacion = obtenerDato(personaEncontrada, "tipo asignacion");
       let badgeTipo = (tipoAsignacion !== "No registrado" && tipoAsignacion.trim() !== "") 
-        ? `<span style="background: #2563eb; color: white; padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: bold; letter-spacing: 0.5px; box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);">${tipoAsignacion}</span>` : "";
+        ? `<span style="background: #7e22ce; color: white; padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: bold; letter-spacing: 0.5px; box-shadow: 0 2px 4px rgba(126, 34, 206, 0.2);">${tipoAsignacion}</span>` : "";
 
       let infoRuta = baseDatosRutas.find(f => obtenerDato(f, "CODIGO DE LV") == idLocalSipe && obtenerDato(f, "CODIGO DE LV") !== "No registrado");
 
@@ -309,7 +310,6 @@
         const tipoMovilidad = obtenerDato(infoRuta, "tipo de movilidad");
         
         const fechaPartida = formatearFecha(obtenerDato(infoRuta, "fecha de salida"));
-        // SE APLICÓ LA FUNCIÓN PARA ELIMINAR LOS SEGUNDOS
         const horaPartida = formatearHora(obtenerDato(infoRuta, "hora de salida"));
 
         htmlBloqueInferior = `
@@ -369,7 +369,7 @@
 
       panelDetalle.innerHTML = `
         <div style="text-align: center;">
-          <h2 style="color: #991b1b; margin-bottom: 5px; font-size: 26px;">Bienvenido FLV</h2>
+          <h2 style="color: #1e40af; margin-bottom: 5px; font-size: 26px;">Bienvenido FLV</h2>
           <div style="margin-bottom: 15px;">
             <h3 style="color: #0f172a; margin-top: 0; margin-bottom: 0; font-size: 20px;">${nombre}</h3>
             ${badgeResponsable}
@@ -397,7 +397,7 @@
           ${botonAccionHTML}
           
           <div class="footer-app">
-            <span>Versión 1.2.01</span>
+            <span>Versión 1.3.0</span>
             <span>Designed by Reynaldo</span>
           </div>
         </div>
