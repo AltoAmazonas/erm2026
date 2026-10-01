@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Consulta FLV - Rutas y Despliegue 1.5.0</title>
+  <title>Consulta FLV 1.6.0</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
   <style>
@@ -55,13 +55,13 @@
     <!-- PANTALLA 1: BUSCADOR -->
     <div id="pantalla-busqueda">
       <h2 class="titulo">Consulta FLV</h2>
-      <p class="subtitulo">Sistema Integrado de Despliegue</p>
+      <p class="subtitulo">Sistema Integrado de Consultas FLV</p>
       <div style="display: flex; flex-direction: column; gap: 15px; margin-bottom: 10px;">
         <input type="text" inputmode="numeric" pattern="[0-9]*" id="dni" class="input-dni" placeholder="Ingrese DNI" oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 8);">
-        <button onclick="iniciarConsulta()" class="btn-consultar">Consultar Despliegue</button>
+        <button onclick="iniciarConsulta()" class="btn-consultar">Consultar FLV</button>
       </div>
       <div class="footer-app">
-        <span>Versión 1.5.0</span>
+        <span>Versión 1.6.0</span>
         <span>Designed by Reynaldo</span>
       </div>
     </div>
@@ -117,7 +117,7 @@
         </table>
       </div>
       <div class="footer-app">
-        <span>Versión 1.5.0</span>
+        <span>Versión 1.6.0</span>
         <span>Designed by Reynaldo</span>
       </div>
     </div>
@@ -205,7 +205,7 @@
             </a>
             <button onclick="location.reload()" class="btn-volver" style="margin-top: 25px;">Realizar otra consulta</button>
             <div class="footer-app">
-              <span>Versión 1.5.0</span>
+              <span>Versión 1.6.0</span>
               <span>Designed by Reynaldo</span>
             </div>
           </div>`;
@@ -340,7 +340,7 @@
           ${botonAccionHTML}
           
           <div class="footer-app">
-            <span>Versión 1.5.0</span>
+            <span>Versión 1.6.0</span>
             <span>Designed by Reynaldo</span>
           </div>
         </div>
