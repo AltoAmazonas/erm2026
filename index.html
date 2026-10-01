@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Consulta FLV - Rutas y Despliegue 1.4.0</title>
+  <title>Consulta FLV - Rutas y Despliegue 1.5.0</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
   <style>
@@ -61,7 +61,7 @@
         <button onclick="iniciarConsulta()" class="btn-consultar">Consultar Despliegue</button>
       </div>
       <div class="footer-app">
-        <span>Versión 1.4.0</span>
+        <span>Versión 1.5.0</span>
         <span>Designed by Reynaldo</span>
       </div>
     </div>
@@ -117,7 +117,7 @@
         </table>
       </div>
       <div class="footer-app">
-        <span>Versión 1.4.0</span>
+        <span>Versión 1.5.0</span>
         <span>Designed by Reynaldo</span>
       </div>
     </div>
@@ -138,43 +138,6 @@
       if(!fila) return "No registrado";
       const llave = Object.keys(fila).find(k => normalizar(k) === normalizar(nombreColumnaBuscada));
       return llave && fila[llave] !== null && fila[llave] !== "" ? String(fila[llave]).trim() : "No registrado";
-    }
-
-    function formatearFecha(fechaStr) {
-      if (!fechaStr || fechaStr === "No registrado") return fechaStr;
-      let fechaString = String(fechaStr).trim();
-      let dia, mes, anio;
-
-      if (fechaString.includes("/")) {
-        let partes = fechaString.split("/");
-        if (partes.length === 3) {
-          dia = partes[0].padStart(2, '0'); 
-          mes = partes[1].padStart(2, '0'); 
-          anio = partes[2].substring(0, 4);
-        }
-      } else if (fechaString.includes("-")) {
-        let partes = fechaString.split("-");
-        if (partes.length === 3) {
-          anio = partes[0]; 
-          mes = partes[1].padStart(2, '0'); 
-          dia = partes[2].substring(0, 2);
-        }
-      }
-
-      if (dia && mes && anio) {
-        const fechaObj = new Date(anio, parseInt(mes) - 1, dia);
-        const diasSemana = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
-        const nombreDia = diasSemana[fechaObj.getDay()];
-        return `${nombreDia}, ${dia}/${mes}/${anio}`;
-      }
-
-      return fechaString;
-    }
-
-    function formatearHora(horaStr) {
-      if (!horaStr || horaStr === "No registrado") return horaStr;
-      let horaString = String(horaStr).trim();
-      return horaString.replace(/(:\d{2}):\d{2}/, '$1');
     }
 
     const cleanChunk = function(chunk) {
@@ -242,7 +205,7 @@
             </a>
             <button onclick="location.reload()" class="btn-volver" style="margin-top: 25px;">Realizar otra consulta</button>
             <div class="footer-app">
-              <span>Versión 1.4.0</span>
+              <span>Versión 1.5.0</span>
               <span>Designed by Reynaldo</span>
             </div>
           </div>`;
@@ -250,7 +213,6 @@
         return;
       }
       
-      // Si el usuario existe en la DB, generamos su vista con el PDF
       renderizarTarjetaDetalle(persona, dniBuscado, false);
     }
 
@@ -301,31 +263,7 @@
 
       let htmlBloqueInferior = "";
 
-      if (esRespBool) {
-        const numRuta = obtenerDato(infoRuta, "numero de ruta");
-        const descRuta = obtenerDato(infoRuta, "descripcion de ruta"); 
-        const tipoMovilidad = obtenerDato(infoRuta, "tipo de movilidad");
-        
-        const fechaPartida = formatearFecha(obtenerDato(infoRuta, "fecha de salida"));
-        const horaPartida = formatearHora(obtenerDato(infoRuta, "hora de salida"));
-
-        htmlBloqueInferior = `
-          <div style="background: #eff6ff; border: 1px solid #bfdbfe; border-left: 6px solid #1e3a8a; padding: 20px; border-radius: 12px; text-align: left; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.02);">
-            <h4 style="color: #1e3a8a; margin-top: 0; margin-bottom: 15px; border-bottom: 1px solid #bfdbfe; padding-bottom: 10px; text-transform: uppercase; letter-spacing: 1px;">🚌 INFORMACIÓN DE DESPLIEGUE</h4>
-            <div style="line-height: 1.8; color: #1e3a8a; font-size: 14.5px;">
-              <p style="margin: 0; padding-bottom: 5px;"><b>Número de Ruta:</b> ${numRuta}</p>
-              
-              <div style="background: white; border: 1px solid #bfdbfe; border-radius: 8px; padding: 15px; margin: 10px 0; font-size: 15px; text-align: center;">
-                <p style="margin: 0; color: #1e3a8a; font-weight: bold;">
-                  🚀 SALIDA: &nbsp;📅 ${fechaPartida} &nbsp;|&nbsp; ⏰ ${horaPartida}
-                </p>
-              </div>
-
-              <p style="margin: 0; padding-top: 5px; padding-bottom: 5px;"><b>Recorrido de Ruta:</b> ${descRuta}</p>
-              <p style="margin: 0;"><b>Tipo de Movilidad:</b> <span style="background:#dbeafe; padding: 4px 10px; border-radius:6px; font-weight:bold;">${tipoMovilidad}</span></p>
-            </div>
-          </div>`;
-      } else {
+      if (!esRespBool) {
         let responsableNombre = "No asignado en la base de datos";
         let responsableCelular = "";
         
@@ -360,7 +298,6 @@
           </div>`;
       }
 
-      // ESTA ES LA URL Y EL BOTÓN GENERADO DINÁMICAMENTE PARA EL PDF DEL JNE
       const urlPDF = `https://sites.jne.gob.pe/logindnfpe/images/20261005_${dniFormateado}.pdf`;
       const botonPDFHTML = `
         <a href="${urlPDF}" target="_blank" style="display: inline-flex; align-items: center; justify-content: center; width: 100%; box-sizing: border-box; background: #ef4444; color: white; padding: 16px 15px; text-decoration: none; border-radius: 10px; font-weight: bold; font-size: 15px; transition: transform 0.2s; margin-top: 5px; box-shadow: 0 4px 10px rgba(239, 68, 68, 0.3);">
@@ -403,7 +340,7 @@
           ${botonAccionHTML}
           
           <div class="footer-app">
-            <span>Versión 1.4.0</span>
+            <span>Versión 1.5.0</span>
             <span>Designed by Reynaldo</span>
           </div>
         </div>
