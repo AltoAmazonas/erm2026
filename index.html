@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Consulta FLV - Rutas y Despliegue 1.3.0</title>
+  <title>Consulta FLV - Rutas y Despliegue 1.4.0</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
   <style>
@@ -27,7 +27,7 @@
     .btn-consultar { padding: 16px; font-size: 16px; background: linear-gradient(135deg, #1d4ed8, #1e40af); color: white; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; transition: transform 0.2s, box-shadow 0.2s; width: 100%; box-shadow: 0 4px 10px rgba(29, 78, 216, 0.3); }
     .btn-consultar:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(29, 78, 216, 0.4); }
     
-    .btn-volver { margin-top: 20px; padding: 12px; width: 100%; font-size: 14px; background: white; color: #1e40af; border: 2px solid #1e40af; border-radius: 10px; cursor: pointer; font-weight: bold; transition: all 0.3s; display: block; text-transform: uppercase; }
+    .btn-volver { margin-top: 15px; padding: 12px; width: 100%; font-size: 14px; background: white; color: #1e40af; border: 2px solid #1e40af; border-radius: 10px; cursor: pointer; font-weight: bold; transition: all 0.3s; display: block; text-transform: uppercase; }
     .btn-volver:hover { background: #eff6ff; }
     
     /* ESTILOS DEL PANEL MAESTRO */
@@ -61,7 +61,7 @@
         <button onclick="iniciarConsulta()" class="btn-consultar">Consultar Despliegue</button>
       </div>
       <div class="footer-app">
-        <span>Versión 1.3.0</span>
+        <span>Versión 1.4.0</span>
         <span>Designed by Reynaldo</span>
       </div>
     </div>
@@ -117,7 +117,7 @@
         </table>
       </div>
       <div class="footer-app">
-        <span>Versión 1.3.0</span>
+        <span>Versión 1.4.0</span>
         <span>Designed by Reynaldo</span>
       </div>
     </div>
@@ -140,7 +140,6 @@
       return llave && fila[llave] !== null && fila[llave] !== "" ? String(fila[llave]).trim() : "No registrado";
     }
 
-    // ⭐ FORMATO DE FECHA (CON DÍA DE LA SEMANA)
     function formatearFecha(fechaStr) {
       if (!fechaStr || fechaStr === "No registrado") return fechaStr;
       let fechaString = String(fechaStr).trim();
@@ -172,11 +171,9 @@
       return fechaString;
     }
 
-    // ⭐ FUNCIÓN: ELIMINAR LOS SEGUNDOS DE LA HORA
     function formatearHora(horaStr) {
       if (!horaStr || horaStr === "No registrado") return horaStr;
       let horaString = String(horaStr).trim();
-      // Convierte "04:00:00 a. m." en "04:00 a. m."
       return horaString.replace(/(:\d{2}):\d{2}/, '$1');
     }
 
@@ -245,7 +242,7 @@
             </a>
             <button onclick="location.reload()" class="btn-volver" style="margin-top: 25px;">Realizar otra consulta</button>
             <div class="footer-app">
-              <span>Versión 1.3.0</span>
+              <span>Versión 1.4.0</span>
               <span>Designed by Reynaldo</span>
             </div>
           </div>`;
@@ -253,6 +250,7 @@
         return;
       }
       
+      // Si el usuario existe en la DB, generamos su vista con el PDF
       renderizarTarjetaDetalle(persona, dniBuscado, false);
     }
 
@@ -284,7 +282,6 @@
         ? `<span style="background: #fef08a; color: #854d0e; padding: 5px 12px; border-radius: 6px; font-size: 12px; font-weight: bold; display: inline-block; margin-top: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">⭐ SÍ ES RESPONSABLE DE LOCAL DE VOTACIÓN</span>`
         : `<span style="background: #e2e8f0; color: #475569; padding: 5px 12px; border-radius: 6px; font-size: 12px; font-weight: bold; display: inline-block; margin-top: 8px;">NO ES RESPONSABLE DE LOCAL DE VOTACIÓN</span>`;
 
-      // NUEVO COLOR PÚRPURA PARA LA ETIQUETA DE ASIGNACIÓN
       const tipoAsignacion = obtenerDato(personaEncontrada, "tipo asignacion");
       let badgeTipo = (tipoAsignacion !== "No registrado" && tipoAsignacion.trim() !== "") 
         ? `<span style="background: #7e22ce; color: white; padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: bold; letter-spacing: 0.5px; box-shadow: 0 2px 4px rgba(126, 34, 206, 0.2);">${tipoAsignacion}</span>` : "";
@@ -363,9 +360,17 @@
           </div>`;
       }
 
+      // ESTA ES LA URL Y EL BOTÓN GENERADO DINÁMICAMENTE PARA EL PDF DEL JNE
+      const urlPDF = `https://sites.jne.gob.pe/logindnfpe/images/20261005_${dniFormateado}.pdf`;
+      const botonPDFHTML = `
+        <a href="${urlPDF}" target="_blank" style="display: inline-flex; align-items: center; justify-content: center; width: 100%; box-sizing: border-box; background: #ef4444; color: white; padding: 16px 15px; text-decoration: none; border-radius: 10px; font-weight: bold; font-size: 15px; transition: transform 0.2s; margin-top: 5px; box-shadow: 0 4px 10px rgba(239, 68, 68, 0.3);">
+          📄 VER PDF (CREDENCIAL JNE)
+        </a>
+      `;
+
       let botonAccionHTML = esModoMaestro 
-        ? `<button onclick="volverAlPanelMaestro()" class="btn-volver" style="margin-top: 10px;">⬅ Volver a la Lista</button>`
-        : `<button onclick="location.reload()" class="btn-volver" style="margin-top: 10px;">Realizar otra consulta</button>`;
+        ? `<button onclick="volverAlPanelMaestro()" class="btn-volver">⬅ Volver a la Lista</button>`
+        : `<button onclick="location.reload()" class="btn-volver">Realizar otra consulta</button>`;
 
       panelDetalle.innerHTML = `
         <div style="text-align: center;">
@@ -394,10 +399,11 @@
           </div>
           
           ${htmlBloqueInferior}
+          ${botonPDFHTML}
           ${botonAccionHTML}
           
           <div class="footer-app">
-            <span>Versión 1.3.0</span>
+            <span>Versión 1.4.0</span>
             <span>Designed by Reynaldo</span>
           </div>
         </div>
